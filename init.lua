@@ -57,11 +57,12 @@ end
 
 
 local gui = GuiCreate()
-local draw_ui = false
+local draw_respawn_ui = false
+local respawn_ui_update = nil
 
 local function CreateRespawnGui(gui, on_ok, on_cancel)
 	return function()
-		if not draw_ui then
+		if not draw_respawn_ui then
 			return
 		end
 
@@ -82,33 +83,31 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 
 		local x_scale = centered_x(gui, ok_text_w + cancel_text_w + 14 + 2) -- 2 is the spacing
 		GuiLayoutBeginHorizontal(gui, x_scale, 78)
-		if GuiButton(gui, newid(), 0, 0, "Wake Up") then
+		if GuiButton(gui, newid(), 0, 0, ok_text) then
+			draw_respawn_ui = false
 			on_ok()
-			-- draw_ui = not draw_ui
 		end
-		if GuiButton(gui, newid(), 14, 0, "Wisp Away") then
+		if GuiButton(gui, newid(), 14, 0, cancel_text) then
+			draw_respawn_ui = false
 			on_cancel()
-			-- draw_ui = not draw_ui
 		end
 		GuiLayoutEnd(gui)
 	end
 end
 
-local respawn_ui_update = CreateRespawnGui(gui, function()
-	print("a-ok")
-end, function()
-	print("no revives for you")
-end)
 
 function OnWorldPreUpdate()
-	if InputIsKeyJustUp(Key_k) then
-		GamePrintImportant("Title blablablablablablablabla", "Bruh")
-	end
-	if InputIsKeyJustUp(Key_p) then
-		draw_ui = not draw_ui
+	if respawn_ui_update ~= nil and draw_respawn_ui then
+		respawn_ui_update()
 	end
 
-	respawn_ui_update()
+	if draw_respawn_ui then
+		return
+	end
+
+	-- if InputIsKeyJustUp(Key_p) then
+	-- 	draw_ui = not draw_ui
+	-- end
 
 	local players = EntityGetWithTag("player_unit")
 	if not (players == nil or #players == 0) then
@@ -118,22 +117,46 @@ function OnWorldPreUpdate()
 				GamePrint(string.format("Error: Missing DamageModelComponent for entity %d", player_id))
 			else
 				for _, damage_model in ipairs(damage_models) do
-					ComponentSetValue(damage_model, "wait_for_kill_flag_on_death", "1")
-					if tonumber(ComponentGetValue(damage_model, "hp")) < ONE_HP then
-						ComponentSetValue(damage_model, "hp",
-							assert(ComponentGetValue(damage_model, "max_hp")))
-						GameRegenItemActionsInPlayer(player_id)
-						local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
-						if game_effect ~= nil then
-							ComponentSetValue(game_effect, "frames", "120")
-						end
-						if not GameHasFlagRun("ending_game_completed") then
-							EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
-							EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- not sure why this
-							GamePrintImportant("You Have Died", respawn_messages[Random(1, #respawn_messages)])
-						else
-							ComponentSetValue(damage_model, "kill_now", "1")
-						end
+					ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
+					if ComponentGetValue2(damage_model, "hp") < ONE_HP then
+						respawn_ui_update = CreateRespawnGui(gui, function()
+							local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
+							if game_effect ~= nil then
+								ComponentSetValue2(game_effect, "frames", 120)
+							end
+
+							ComponentSetValue2(damage_model, "hp",
+								ComponentGetValue2(damage_model, "max_hp"))
+							GameRegenItemActionsInPlayer(player_id)
+
+							if not GameHasFlagRun("ending_game_completed") then
+								EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
+								EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- not sure why this
+								GamePrintImportant("You Have Died", respawn_messages[Random(1, #respawn_messages)])
+							else
+								ComponentSetValue2(damage_model, "kill_now", true)
+							end
+						end, function()
+							ComponentSetValue2(damage_model, "kill_now", true)
+						end)
+						draw_respawn_ui = true
+
+						-- ComponentSetValue2(damage_model, "hp",
+						-- 	ComponentGetValue2(damage_model, "max_hp"))
+						-- GameRegenItemActionsInPlayer(player_id)
+						-- local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
+						-- if game_effect ~= nil then
+						-- 	ComponentSetValue2(game_effect, "frames", 120)
+						-- end
+						-- if not GameHasFlagRun("ending_game_completed") then
+						-- 	EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
+						-- 	EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- not sure why this
+						-- 	GamePrintImportant("You Have Died", respawn_messages[Random(1, #respawn_messages)])
+						-- else
+						-- 	ComponentSetValue(damage_model, "kill_now", "1")
+						-- end
+
+						break
 					end
 				end
 			end
@@ -153,13 +176,24 @@ function OnWorldPreUpdate()
 						GamePrint(string.format("Error: Missing DamageModelComponent for entity %d", player_id))
 					else
 						for _, damage_model in ipairs(damage_models) do
-							ComponentSetValue(damage_model, "wait_for_kill_flag_on_death", "1")
-							if tonumber(ComponentGetValue(damage_model, "hp")) < ONE_HP then
-								ComponentSetValue(damage_model, "hp",
-									assert(ComponentGetValue(damage_model, "max_hp")))
-								SetRandomSeed(EntityGetTransform(player_id))
-								GamePrintImportant("Polymorph Is Garbage",
-									respawn_messages[Random(1, #respawn_messages)])
+							ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
+							if ComponentGetValue2(damage_model, "hp") < ONE_HP then
+								respawn_ui_update = CreateRespawnGui(gui, function()
+									ComponentSetValue2(damage_model, "hp",
+										ComponentGetValue2(damage_model, "max_hp"))
+									SetRandomSeed(EntityGetTransform(player_id))
+								end, function()
+									ComponentSetValue2(damage_model, "kill_now", true)
+								end)
+								draw_respawn_ui = true
+
+								-- ComponentSetValue2(damage_model, "hp",
+								-- 	ComponentGetValue2(damage_model, "max_hp"))
+								-- SetRandomSeed(EntityGetTransform(player_id))
+								-- GamePrintImportant("Polymorph Is Garbage",
+								-- 	respawn_messages[Random(1, #respawn_messages)])
+
+								break
 							end
 						end
 					end
