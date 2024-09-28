@@ -30,7 +30,7 @@ local function GuiDecoratedText(gui, id, y, title)
 
 	local edge_w, edge_h = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_left.png", 1)
 	local middle_w, middle_h = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_middle.png", 1)
-	local text_w, _ = GuiGetTextDimensions(gui, title, 2)
+	local text_w, _ = GuiGetTextDimensions(gui, title, 1, 2, "data/fonts/font_pixel_huge.xml")
 
 	local padding_scale = 6
 	local middle_scale = math.ceil(text_w / middle_w)
@@ -51,7 +51,7 @@ local function GuiDecoratedText(gui, id, y, title)
 	GuiLayoutEnd(gui)
 
 	GuiLayoutBeginVertical(gui, text_x_scale, y)
-	GuiText(gui, 0, 2, title, 2)
+	GuiText(gui, 0, 5, title, 1, "data/fonts/font_pixel_huge.xml")
 	GuiLayoutEnd(gui)
 end
 
@@ -68,6 +68,10 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 		local newid = IdFactory()
 		GuiStartFrame(gui)
 
+		GuiZSet(gui, -1000)
+		GuiImage(gui, newid(), 0, 0, "data/debug/ui_background.png", 1, 1000)
+		GuiZSet(gui, -1100)
+
 		local title_text = string.upper("Unthethered")
 		GuiDecoratedText(gui, newid(), 70, title_text)
 
@@ -76,8 +80,8 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 		local cancel_text = "Wake Up"
 		local cancel_text_w, _ = GuiGetTextDimensions(gui, cancel_text)
 
-		local x_scale = centered_x(gui, ok_text_w + cancel_text_w + 14 + 2)
-		GuiLayoutBeginHorizontal(gui, x_scale, 80)
+		local x_scale = centered_x(gui, ok_text_w + cancel_text_w + 14 + 2) -- 2 is the spacing
+		GuiLayoutBeginHorizontal(gui, x_scale, 78)
 		if GuiButton(gui, newid(), 0, 0, "Wake Up") then
 			on_ok()
 			-- draw_ui = not draw_ui
