@@ -127,13 +127,16 @@ function OnWorldPreUpdate()
 	if not player_id then return end
 
 	local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
-	if not damage_model then
-		print(string.format("Error: Missing DamageModelComponent for entity %d", player_id))
-		return
-	end
+	if not damage_model then return end
 
 	ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
+
 	if ComponentGetValue2(damage_model, "hp") >= ONE_HP then return end
+
+	local controls = EntityGetFirstComponent(player_id, "ControlsComponent")
+	if not controls then return end
+
+	ComponentSetValue2(controls, "enabled", false)
 
 	respawn_ui_update = CreateRespawnGui(gui,
 		function()
@@ -146,6 +149,7 @@ function OnWorldPreUpdate()
 				ComponentGetValue2(damage_model, "max_hp"))
 			GameRegenItemActionsInPlayer(player_id)
 
+			ComponentSetValue2(controls, "enabled", true)
 			if not GameHasFlagRun("ending_game_completed") then
 				EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
 				EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
@@ -155,6 +159,7 @@ function OnWorldPreUpdate()
 			end
 		end,
 		function()
+			ComponentSetValue2(controls, "enabled", true)
 			ComponentSetValue2(damage_model, "kill_now", true)
 		end)
 
