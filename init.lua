@@ -9,6 +9,8 @@ local respawn_position = {
 		"DESIGN_PLAYER_START_POS_Y"))
 } -- 227, -85
 
+-- Why am I using different styling for function names? Don't think about it.
+
 local function IdFactory()
 	local id_ = 0
 
@@ -59,11 +61,15 @@ local draw_respawn_ui = false
 local respawn_ui_update = nil
 
 local function CreateRespawnGui(gui, on_ok, on_cancel)
+	local hovered = {}
+	local hover_prefix = ">"
+
 	return function()
 		if not draw_respawn_ui then
 			return
 		end
 
+		local id
 		local new_id = IdFactory()
 		GuiStartFrame(gui)
 
@@ -74,21 +80,38 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 		local title_text = string.upper("Unthethered")
 		GuiDecoratedTitle(gui, new_id(), 70, title_text)
 
-		local ok_text = "Wake Up"
-		local cancel_text = "Wisp Away"
+		local ok_text = "  Wake Up"
+		local cancel_text = "  Wisp Away"
 		local ok_text_w, _ = GuiGetTextDimensions(gui, ok_text)
 		local cancel_text_w, _ = GuiGetTextDimensions(gui, cancel_text)
 
 		local x_scale = centered_x(gui, ok_text_w + cancel_text_w + 14 + 2) -- 2 is the spacing
 		GuiLayoutBeginHorizontal(gui, x_scale, 78)
-		if GuiButton(gui, new_id(), 0, 0, ok_text) then
+
+		id = new_id()
+		if hovered[id] then
+			GuiColorSetForNextWidget(gui, 1, 1, 0.5, 1) -- doesn't seem to be working
+			ok_text = ok_text:gsub("^  *", hover_prefix)
+		end
+
+		if GuiButton(gui, id, 0, 0, ok_text) then
 			draw_respawn_ui = false
 			on_ok()
 		end
-		if GuiButton(gui, new_id(), 14, 0, cancel_text) then
+		hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
+
+		id = new_id()
+		if hovered[id] then
+			GuiColorSetForNextWidget(gui, 1, 1, 0.5, 1)
+			cancel_text = cancel_text:gsub("^ *", hover_prefix)
+		end
+
+		if GuiButton(gui, id, 14, 0, cancel_text) then
 			draw_respawn_ui = false
 			on_cancel()
 		end
+		hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
+
 		GuiLayoutEnd(gui)
 	end
 end
@@ -126,6 +149,7 @@ function OnWorldPreUpdate()
 			if not GameHasFlagRun("ending_game_completed") then
 				EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
 				EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
+				ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", false)
 			else
 				ComponentSetValue2(damage_model, "kill_now", true)
 			end
