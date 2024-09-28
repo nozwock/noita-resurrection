@@ -153,7 +153,6 @@ function OnWorldPreUpdate()
 			if not GameHasFlagRun("ending_game_completed") then
 				EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
 				EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
-				ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", false)
 			else
 				ComponentSetValue2(damage_model, "kill_now", true)
 			end
