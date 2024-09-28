@@ -26,15 +26,15 @@ end
 local function GuiDecoratedTitle(gui, id, y, title)
 	title = string.upper(title)
 
-	local edge_w, edge_h = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_left.png", 1)
-	local middle_w, middle_h = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_middle.png", 1)
+	local edge_w, _ = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_left.png", 1)
+	local middle_w, _ = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_middle.png", 1)
 	local text_w, _ = GuiGetTextDimensions(gui, title, 1, 2, "data/fonts/font_pixel_huge.xml")
 
 	local padding_scale = 6
 	local middle_scale = math.ceil(text_w / middle_w)
 	local decor_w = edge_w * 2 + middle_w * (middle_scale + padding_scale * 2)
 
-	local w, h = GuiGetScreenDimensions(gui)
+	local w, _ = GuiGetScreenDimensions(gui)
 	local decor_x_scale = math.floor((w / 2 - decor_w / 2) / w * 100)
 	local text_x_scale = math.floor((w / 2 - text_w / 2) / w * 100)
 
@@ -64,15 +64,15 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 			return
 		end
 
-		local newid = IdFactory()
+		local new_id = IdFactory()
 		GuiStartFrame(gui)
 
 		GuiZSet(gui, -1000)
-		GuiImage(gui, newid(), 0, 0, "data/debug/ui_background.png", 1, 1000)
+		GuiImage(gui, new_id(), 0, 0, "data/debug/ui_background.png", 1, 1000)
 		GuiZSet(gui, -1100)
 
 		local title_text = string.upper("Unthethered")
-		GuiDecoratedTitle(gui, newid(), 70, title_text)
+		GuiDecoratedTitle(gui, new_id(), 70, title_text)
 
 		local ok_text = "Wake Up"
 		local cancel_text = "Wisp Away"
@@ -81,11 +81,11 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 
 		local x_scale = centered_x(gui, ok_text_w + cancel_text_w + 14 + 2) -- 2 is the spacing
 		GuiLayoutBeginHorizontal(gui, x_scale, 78)
-		if GuiButton(gui, newid(), 0, 0, ok_text) then
+		if GuiButton(gui, new_id(), 0, 0, ok_text) then
 			draw_respawn_ui = false
 			on_ok()
 		end
-		if GuiButton(gui, newid(), 14, 0, cancel_text) then
+		if GuiButton(gui, new_id(), 14, 0, cancel_text) then
 			draw_respawn_ui = false
 			on_cancel()
 		end
