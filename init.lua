@@ -1,5 +1,6 @@
 dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/debug/keycodes.lua")
+dofile("data/scripts/status_effects/status_list.lua")
 
 local ONE_HP = 0.04
 
@@ -153,6 +154,10 @@ function OnWorldPreUpdate()
 			if not GameHasFlagRun("ending_game_completed") then
 				EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
 				EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
+
+				for _, effect in ipairs(status_effects) do
+					EntityRemoveStainStatusEffect(player_id, effect.id)
+				end
 			else
 				ComponentSetValue2(damage_model, "kill_now", true)
 			end
