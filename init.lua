@@ -26,6 +26,7 @@ local function centered_x(gui, object_width)
   return math.floor((w / 2 - object_width / 2) / w * 100)
 end
 
+--- `y` is percent based.
 local function GuiDecoratedTitle(gui, id, y, title)
   title = string.upper(title)
 
@@ -211,6 +212,7 @@ function OnWorldPreUpdate()
           EntityRemoveStainStatusEffect(player_id, effect.id)
         end
       else
+        ComponentSetValue2(damage_model, "hp", 0)
         ComponentSetValue2(damage_model, "kill_now", true)
       end
     end,
@@ -226,6 +228,7 @@ function OnWorldPreUpdate()
         return
       end
 
+      ComponentSetValue2(damage_model, "hp", 0)
       ComponentSetValue2(damage_model, "kill_now", true)
     end)
 
