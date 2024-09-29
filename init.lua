@@ -34,14 +34,17 @@ local function GuiDecoratedTitle(gui, id, y, title)
 	local text_w, _ = GuiGetTextDimensions(gui, title, 1, 2, "data/fonts/font_pixel_huge.xml")
 
 	local padding_scale = 6
-	local middle_scale = math.ceil(text_w / middle_w)
+	local middle_scale = text_w / middle_w
 	local decor_w = edge_w * 2 + middle_w * (middle_scale + padding_scale * 2)
 
-	local w, _ = GuiGetScreenDimensions(gui)
-	local decor_x_scale = math.floor((w / 2 - decor_w / 2) / w * 100)
-	local text_x_scale = math.floor((w / 2 - text_w / 2) / w * 100)
+	local w, h = GuiGetScreenDimensions(gui)
+	local decor_x = math.floor(w / 2 - decor_w / 2)
+	local text_x = math.floor(w / 2 - text_w / 2)
+	y = h * y / 100
+	-- print(string.format("w:%.2f decor_w:%.2f text_w:%.2f decor_scale:%.2f text_scale:%.2f", w, decor_w, text_w,
+	-- 	decor_x_scale, text_x_scale))
 
-	GuiLayoutBeginHorizontal(gui, decor_x_scale, y, false, 0, 0)
+	GuiLayoutBeginHorizontal(gui, decor_x, y, true, 0, 0)
 	GuiImage(gui, id, 0, 0, "data/ui_gfx/decorations/piece_small_left.png", 1, 1, 0, 0,
 		GUI_RECT_ANIMATION_PLAYBACK.Loop)
 	GuiImage(gui, id, 0, 0, "data/ui_gfx/decorations/piece_small_middle.png", 1, middle_scale + padding_scale * 2,
@@ -51,7 +54,7 @@ local function GuiDecoratedTitle(gui, id, y, title)
 		GUI_RECT_ANIMATION_PLAYBACK.Loop)
 	GuiLayoutEnd(gui)
 
-	GuiLayoutBeginVertical(gui, text_x_scale, y)
+	GuiLayoutBeginVertical(gui, text_x, y, true)
 	GuiText(gui, 0, 5, title, 1, "data/fonts/font_pixel_huge.xml")
 	GuiLayoutEnd(gui)
 end
