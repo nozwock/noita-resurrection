@@ -61,8 +61,10 @@ local gui = GuiCreate()
 local draw_respawn_ui = false
 local respawn_ui_update = nil
 
-local function CreateRespawnGui(gui, on_ok, on_cancel)
+local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
+	local cessUpdateFrames = 0
 	local hovered = {}
+	local clicked = {}
 	local hover_prefix = ">"
 
 	return function()
@@ -91,15 +93,20 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 
 		id = new_id()
 		if hovered[id] then
-			GuiColorSetForNextWidget(gui, 1, 1, 0.5, 1) -- doesn't seem to be working
+			GuiColorSetForNextWidget(gui, 1, 1, 0.5, 1) -- Doesn't seem to be working
 			ok_text = ok_text:gsub("^  *", hover_prefix)
 		end
 
 		if GuiButton(gui, id, 0, 0, ok_text) then
-			draw_respawn_ui = false
-			on_ok()
+			clicked[id] = true
+			disable_cessation()
+			cessUpdateFrames = cessUpdateFrames + 1
 		end
 		hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
+		if clicked[id] and cessUpdateFrames > 1 then
+			on_ok()
+			draw_respawn_ui = false
+		end
 
 		id = new_id()
 		if hovered[id] then
@@ -108,15 +115,51 @@ local function CreateRespawnGui(gui, on_ok, on_cancel)
 		end
 
 		if GuiButton(gui, id, 14, 0, cancel_text) then
-			draw_respawn_ui = false
-			on_cancel()
+			clicked[id] = true
+			disable_cessation()
+			cessUpdateFrames = cessUpdateFrames + 1
 		end
 		hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
+		if clicked[id] and cessUpdateFrames > 1 then
+			on_cancel()
+			draw_respawn_ui = false
+		end
 
 		GuiLayoutEnd(gui)
+
+		if cessUpdateFrames > 0 then
+			cessUpdateFrames = cessUpdateFrames + 1
+		end
 	end
 end
 
+--- You must wait a frame after running the returned clousure to de-polymorph.
+local function CessatePlayer()
+	local player_id = EntityGetWithTag("player_unit")[1]
+	if not player_id then return end
+	GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
+
+	local poly_player_id = EntityGetWithTag("polymorphed_cessation")[1]
+	if not poly_player_id then return end
+	-- if not assert(IsPlayer(poly_player_id)) then return end
+
+	for _, id in ipairs(assert(EntityGetAllChildren(poly_player_id))) do
+		if #EntityGetTags(id) == 0 then
+			local effect = assert(EntityGetFirstComponent(id, "GameEffectComponent"))
+			ComponentSetValue2(effect, "frames", 10 ^ 6) -- Not ideal
+			GameAddFlagRun("msg_gods_looking")
+			GameAddFlagRun("msg_gods_looking2")
+
+			return function()
+				ComponentSetValue2(effect, "frames", 1)
+				GameRemoveFlagRun("msg_gods_looking")
+				GameRemoveFlagRun("msg_gods_looking2")
+			end
+		end
+	end
+
+	return nil
+end
 
 function OnWorldPreUpdate()
 	if respawn_ui_update ~= nil and draw_respawn_ui then
@@ -126,21 +169,28 @@ function OnWorldPreUpdate()
 
 	local player_id = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 	if not player_id then return end
-
 	local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
 	if not damage_model then return end
 
 	ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
-
 	if ComponentGetValue2(damage_model, "hp") >= ONE_HP then return end
 
-	local controls = EntityGetFirstComponent(player_id, "ControlsComponent")
-	if not controls then return end
+	local disable_cessation = CessatePlayer()
+	if not disable_cessation then return end
 
-	ComponentSetValue2(controls, "enabled", false)
-
-	respawn_ui_update = CreateRespawnGui(gui,
+	respawn_ui_update = CreateRespawnGui(gui, disable_cessation,
 		function()
+			local player_id = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+			if not player_id then
+				print("failed to get player_id during respawn")
+				return
+			end
+			local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
+			if not damage_model then
+				print("failed to get DamageModelComponent during respawn")
+				return
+			end
+
 			local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
 			if game_effect then
 				ComponentSetValue2(game_effect, "frames", 120)
@@ -150,7 +200,6 @@ function OnWorldPreUpdate()
 				ComponentGetValue2(damage_model, "max_hp"))
 			GameRegenItemActionsInPlayer(player_id)
 
-			ComponentSetValue2(controls, "enabled", true)
 			if not GameHasFlagRun("ending_game_completed") then
 				EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
 				EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
@@ -163,7 +212,17 @@ function OnWorldPreUpdate()
 			end
 		end,
 		function()
-			ComponentSetValue2(controls, "enabled", true)
+			local player_id = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+			if not player_id then
+				print("failed to get player_id during game over")
+				return
+			end
+			local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
+			if not damage_model then
+				print("failed to get DamageModelComponent during game over")
+				return
+			end
+
 			ComponentSetValue2(damage_model, "kill_now", true)
 		end)
 
