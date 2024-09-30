@@ -196,7 +196,7 @@ local hold_key_pray_handler = CreateHoldKeyDownHandler(Key_p)
 function OnWorldPreUpdate()
   hold_key_pray_handler:Update()
 
-  if hold_key_pray_handler:HeldOnceFor(240) then
+  if hold_key_pray_handler:HeldOnceFor(120) then
     local player_id = GetPlayer()
     if player_id ~= nil then
       local x, y, _ = EntityGetTransform(player_id)
