@@ -71,6 +71,10 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
   local clicked = {}
   local hover_prefix = ">"
 
+  local function PlayButtonSelectSound()
+    GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_select", 0, 0)
+  end
+
   return function()
     if not draw_respawn_ui then
       return
@@ -102,6 +106,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     end
 
     if GuiButton(gui, id, 0, 0, ok_text) then
+      PlayButtonSelectSound()
       clicked[id] = true
       disable_cessation()
       cessUpdateFrames = cessUpdateFrames + 1
@@ -119,6 +124,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     end
 
     if GuiButton(gui, id, 14, 0, cancel_text) then
+      PlayButtonSelectSound()
       clicked[id] = true
       disable_cessation()
       cessUpdateFrames = cessUpdateFrames + 1
