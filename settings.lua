@@ -55,7 +55,7 @@ mod_settings = {
     value_min = 0.1,
     value_max = 1,
     value_display_multiplier = 100,
-    value_display_formatting = "$0%",
+    value_display_formatting = " $0%",
     scope = MOD_SETTING_SCOPE_RUNTIME
   },
   {
@@ -66,7 +66,7 @@ mod_settings = {
     value_min = 0,
     value_max = 1,
     value_display_multiplier = 100,
-    value_display_formatting = "$0%",
+    value_display_formatting = " $0%",
     scope = MOD_SETTING_SCOPE_RUNTIME
   },
   {
