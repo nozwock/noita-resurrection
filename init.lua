@@ -13,7 +13,7 @@ local respawn_position = {
 -- Why am I using different styling for function names? Don't think about it.
 
 local function IdFactory()
-  local id = 0
+  local id = 100
 
   return function()
     id = id + 1
