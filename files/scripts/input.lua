@@ -1,4 +1,4 @@
-local utils = dofile_once("mods/resurrection/data/scripts/utils.lua") ---@type utils
+local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 
 ---@class input
 local mod = {

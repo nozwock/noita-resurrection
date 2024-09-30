@@ -1,4 +1,4 @@
-dofile("mods/resurrection/data/scripts/defs.lua")
+dofile("mods/resurrection/files/scripts/defs.lua")
 
 ---@class utils
 local mod = {}

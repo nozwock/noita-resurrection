@@ -1,7 +1,7 @@
 dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/debug/keycodes.lua")
 dofile("data/scripts/status_effects/status_list.lua")
-local utils = dofile_once("mods/resurrection/data/scripts/utils.lua") ---@type utils
+local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 
 
 local ONE_HP = 0.04
@@ -260,7 +260,7 @@ function OnWorldPreUpdate()
       respawn_position.x = x
       respawn_position.y = y
 
-      EntityLoad("mods/resurrection/data/entities/particles/image_emitters/small_effect.xml", x, y)
+      EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml", x, y)
       GamePrint("Tethered Once More")
     end
   end

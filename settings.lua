@@ -1,7 +1,7 @@
 ---@diagnostic disable: lowercase-global
-dofile("mods/resurrection/data/scripts/defs.lua")
+dofile("mods/resurrection/files/scripts/defs.lua")
 dofile("data/scripts/lib/mod_settings.lua")
-local input = dofile_once("mods/resurrection/data/scripts/input.lua") ---@type input
+local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type input
 
 -- This is a magic global that can be used to migrate settings to new mod versions.
 -- Call mod_settings_get_version() before mod_settings_update() to get the old value.
