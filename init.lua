@@ -311,6 +311,7 @@ function OnWorldPreUpdate()
         for _, effect in pairs(status_effects) do
           EntityRemoveStainStatusEffect(player_id, effect.id)
         end
+        ComponentSetValue2(damage_model, "mIsOnFire", false)
 
         local wallet = assert(EntityGetFirstComponent(player_id, "WalletComponent"))
         local money = ComponentGetValue2(wallet, "money")
