@@ -117,7 +117,6 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
 
     local id
     local new_id = IdFactory()
-    GuiStartFrame(gui)
 
     GuiZSet(gui, -1000)
     GuiImage(gui, new_id(), 0, 0, "data/debug/ui_background.png", 1, 1000)
@@ -249,6 +248,8 @@ end
 local hold_spawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("spawn_point")))
 
 function OnWorldPreUpdate()
+  GuiStartFrame(gui)
+
   ProcessDeferredTasks()
   hold_spawn_point_handler:Update()
 
