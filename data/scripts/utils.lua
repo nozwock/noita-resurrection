@@ -1,3 +1,6 @@
+dofile("mods/resurrection/data/scripts/defs.lua")
+
+---@class utils
 local mod = {}
 
 -- Recursive `pairs`.
@@ -18,6 +21,11 @@ function mod:rpairs(t)
       end
     end
   )
+end
+
+---@param id string
+function mod:GetModSettingId(id)
+  return MOD_ID .. "." .. id
 end
 
 return mod

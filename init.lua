@@ -1,6 +1,8 @@
 dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/debug/keycodes.lua")
 dofile("data/scripts/status_effects/status_list.lua")
+local utils = dofile_once("mods/resurrection/data/scripts/utils.lua") ---@type utils
+
 
 local ONE_HP = 0.04
 
@@ -191,12 +193,12 @@ local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
-local hold_key_pray_handler = CreateHoldKeyDownHandler(Key_p)
+local hold_spawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("spawn_point")))
 
 function OnWorldPreUpdate()
-  hold_key_pray_handler:Update()
+  hold_spawn_point_handler:Update()
 
-  if hold_key_pray_handler:HeldOnceFor(120) then
+  if hold_spawn_point_handler:HeldOnceFor(120) then
     local player_id = GetPlayer()
     if player_id ~= nil then
       local x, y, _ = EntityGetTransform(player_id)
@@ -243,7 +245,7 @@ function OnWorldPreUpdate()
       end
 
       ComponentSetValue2(damage_model, "hp",
-        ComponentGetValue2(damage_model, "max_hp"))
+        ComponentGetValue2(damage_model, "max_hp") * ModSettingGet(utils:GetModSettingId("respawn_health")))
       GameRegenItemActionsInPlayer(player_id)
 
       if not GameHasFlagRun("ending_game_completed") then

@@ -1,5 +1,6 @@
-local utils = dofile_once("mods/resurrection/data/scripts/utils.lua")
+local utils = dofile_once("mods/resurrection/data/scripts/utils.lua") ---@type utils
 
+---@class input
 local mod = {
   MOUSE_KEYS = { Mouse_left = 1, Mouse_right = 2, Mouse_middle = 3, Mouse_wheel_up = 4, Mouse_wheel_down = 5, Mouse_x1 = 6, Mouse_x2 = 7 },
   CONTROL_KEYS = { Key_RETURN = 40, Key_ESCAPE = 41, Key_BACKSPACE = 42, Key_TAB = 43, },
