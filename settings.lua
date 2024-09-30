@@ -14,7 +14,7 @@ local function CreateGuiSettingKeybind()
     local setting_id = mod_setting_get_id(mod_id, setting)
     local prev_value = ModSettingGetNextValue(setting_id) or setting.value_default
 
-    GuiLayoutBeginHorizontal(gui, 0, 0)
+    GuiLayoutBeginHorizontal(gui, mod_setting_group_x_offset, 0, true)
 
     local value = nil
     local text
