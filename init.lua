@@ -209,7 +209,7 @@ function OnWorldPreUpdate()
       respawn_position.x = x
       respawn_position.y = y
 
-      EntityLoad("mods/respawn_testing/data/entities/particles/image_emitters/small_effect.xml", x, y)
+      EntityLoad("mods/resurrection/data/entities/particles/image_emitters/small_effect.xml", x, y)
       GamePrint("Tethered Once More")
     end
   end
