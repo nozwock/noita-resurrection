@@ -18,6 +18,7 @@ local respawn_ui_update = nil
 
 -- Why am I using different styling for function names? Don't think about it.
 
+---@return fun():number
 local function IdFactory()
   local id = 100
 
@@ -67,12 +68,18 @@ local function ProcessDeferredTasks()
 end
 
 
+---@param gui gui
+---@param object_width number
 local function centered_x(gui, object_width)
   local w, _ = GuiGetScreenDimensions(gui)
   return math.floor((w / 2 - object_width / 2) / w * 100)
 end
 
---- `y` is percent based.
+---`y` is percent based.
+---@param gui gui
+---@param id integer
+---@param y number
+---@param title string
 local function GuiDecoratedTitle(gui, id, y, title)
   title = string.upper(title)
 
@@ -88,8 +95,6 @@ local function GuiDecoratedTitle(gui, id, y, title)
   local decor_x = math.floor(w / 2 - decor_w / 2)
   local text_x = math.floor(w / 2 - text_w / 2)
   y = h * y / 100
-  -- print(string.format("w:%.2f decor_w:%.2f text_w:%.2f decor_scale:%.2f text_scale:%.2f", w, decor_w, text_w,
-  -- 	decor_x_scale, text_x_scale))
 
   GuiLayoutBeginHorizontal(gui, decor_x, y, true, 0, 0)
   GuiImage(gui, id, 0, 0, "data/ui_gfx/decorations/piece_small_left.png", 1, 1, 0, 0,
@@ -106,6 +111,10 @@ local function GuiDecoratedTitle(gui, id, y, title)
   GuiLayoutEnd(gui)
 end
 
+---@param gui gui
+---@param disable_cessation function
+---@param on_ok function
+---@param on_cancel function
 local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
   local hovered = {}
   local hover_prefix = ">"
@@ -163,7 +172,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
   end
 end
 
---- You must wait a frame after running the returned clousure to de-polymorph.
+---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
   local player_id = EntityGetWithTag("player_unit")[1]
   if not player_id then return end
@@ -171,7 +180,6 @@ local function CessatePlayer()
 
   local poly_player_id = EntityGetWithTag("polymorphed_cessation")[1]
   if not poly_player_id then return end
-  -- if not assert(IsPlayer(poly_player_id)) then return end
 
   for _, id in ipairs(assert(EntityGetAllChildren(poly_player_id))) do
     if #EntityGetTags(id) == 0 then
@@ -191,6 +199,7 @@ local function CessatePlayer()
   return nil
 end
 
+---@param key_code integer
 local function CreateHoldKeyDownHandler(key_code)
   local handler = { key_code = key_code, frames_held = 0 }
 
@@ -217,6 +226,9 @@ local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
+---@param amount integer
+---@param x integer
+---@param y integer
 local function DropGold(amount, x, y)
   local gold_nugget_amounts = { 200000, 10000, 1000, 200, 50, 10, 1 }
   local gold_nuggets = {

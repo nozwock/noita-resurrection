@@ -3,7 +3,9 @@ dofile("mods/resurrection/files/scripts/defs.lua")
 ---@class utils
 local mod = {}
 
--- Recursive `pairs`.
+---Recursive `pairs`.
+---@param t table
+---@return fun():string|number, unknown
 function mod:rpairs(t)
   return coroutine.wrap(
     function()
