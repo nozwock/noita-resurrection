@@ -107,9 +107,7 @@ local function GuiDecoratedTitle(gui, id, y, title)
 end
 
 local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
-  local cessUpdateFrames = 0
   local hovered = {}
-  local clicked = {}
   local hover_prefix = ">"
 
   return function()
@@ -143,15 +141,11 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     end
 
     if GuiButton(gui, id, 0, 0, ok_text) then
-      clicked[id] = true
       disable_cessation()
-      cessUpdateFrames = cessUpdateFrames + 1
-    end
-    hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
-    if clicked[id] and cessUpdateFrames > 1 then
-      on_ok()
+      AddDeferredTask(0, on_ok)
       draw_respawn_ui = false
     end
+    hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
 
     id = new_id()
     if hovered[id] then
@@ -160,21 +154,13 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     end
 
     if GuiButton(gui, id, 14, 0, cancel_text) then
-      clicked[id] = true
       disable_cessation()
-      cessUpdateFrames = cessUpdateFrames + 1 -- todo: Use the DeferredTask API for this instead
-    end
-    hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
-    if clicked[id] and cessUpdateFrames > 1 then
-      on_cancel()
+      AddDeferredTask(0, on_cancel)
       draw_respawn_ui = false
     end
+    hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
 
     GuiLayoutEnd(gui)
-
-    if cessUpdateFrames > 0 then
-      cessUpdateFrames = cessUpdateFrames + 1
-    end
   end
 end
 
