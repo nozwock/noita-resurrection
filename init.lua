@@ -291,7 +291,7 @@ function OnWorldPreUpdate()
   if not damage_model then return end
 
   ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
-  if ComponentGetValue2(damage_model, "hp") >= ONE_HP then return end
+  if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") then return end
 
   local disable_cessation = CessatePlayer()
   if not disable_cessation then return end
