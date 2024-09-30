@@ -1,10 +1,50 @@
 ---@diagnostic disable: lowercase-global
 dofile("data/scripts/lib/mod_settings.lua")
+local input = dofile_once("mods/resurrection/data/scripts/input.lua")
 
 local mod_id = "resurrection" -- This should match the name of your mod's folder.
 -- This is a magic global that can be used to migrate settings to new mod versions.
 -- Call mod_settings_get_version() before mod_settings_update() to get the old value.
 mod_settings_version = 1
+
+local function CreateGuiSettingKeybind()
+  local awaiting_input = false
+
+  return function(mod_id, gui, in_main_menu, im_id, setting)
+    local setting_id = mod_setting_get_id(mod_id, setting)
+    local prev_value = ModSettingGetNextValue(setting_id) or setting.value_default
+
+    GuiLayoutBeginHorizontal(gui, 0, 0)
+
+    local value = nil
+    local text
+    if awaiting_input then
+      text = "Press something"
+      local key = input:ListenInputKeyGroup(input.KEYS)
+      local control_key = input:ListenInputKeyGroup(input.CONTROL_KEYS)
+      if control_key ~= nil then
+        awaiting_input = false
+      elseif key ~= nil then
+        awaiting_input = false
+        value = key
+      end
+    else
+      text = input:NameForKey(prev_value)
+    end
+
+    if GuiButton(gui, im_id, 0, 0, setting.ui_name .. ": " .. text) then
+      awaiting_input = true
+    end
+
+    GuiLayoutEnd(gui)
+
+    if value ~= nil then
+      ModSettingSetNextValue(setting_id, value, false)
+    end
+    mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
+  end
+end
+
 
 mod_settings = {
   {
@@ -28,6 +68,20 @@ mod_settings = {
     value_display_multiplier = 100,
     value_display_formatting = "$0%",
     scope = MOD_SETTING_SCOPE_RUNTIME
+  },
+  {
+    category_id = "keybinds",
+    ui_name = "Keybinds",
+    foldable = true,
+    settings = {
+      {
+        id = "spawn_point",
+        ui_name = "Spawn Point",
+        value_default = input.KEYS.Key_t,
+        ui_fn = CreateGuiSettingKeybind(),
+        scope = MOD_SETTING_SCOPE_RUNTIME
+      },
+    }
   }
 }
 
