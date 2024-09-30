@@ -165,13 +165,55 @@ local function CessatePlayer()
   return nil
 end
 
+local function CreateHoldKeyDownHandler(key_code)
+  local handler = { key_code = key_code, frames_held = 0 }
+
+  function handler:Update()
+    if InputIsKeyDown(self.key_code) then
+      self.frames_held = self.frames_held + 1
+    else
+      self.frames_held = 0
+    end
+  end
+
+  function handler:HeldFor(frames)
+    return self.frames_held >= frames
+  end
+
+  function handler:HeldOnceFor(frames)
+    return self:HeldFor(frames) and self.frames_held % frames == 0
+  end
+
+  return handler
+end
+
+local function GetPlayer()
+  return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+end
+
+local hold_key_pray_handler = CreateHoldKeyDownHandler(Key_p)
+
 function OnWorldPreUpdate()
+  hold_key_pray_handler:Update()
+
+  if hold_key_pray_handler:HeldOnceFor(240) then
+    local player_id = GetPlayer()
+    if player_id ~= nil then
+      local x, y, _ = EntityGetTransform(player_id)
+      respawn_position.x = x
+      respawn_position.y = y
+
+      EntityLoad("mods/respawn_testing/data/entities/particles/image_emitters/small_effect.xml", x, y)
+      GamePrint("Tethered Once More")
+    end
+  end
+
   if respawn_ui_update ~= nil and draw_respawn_ui then
     respawn_ui_update()
     return
   end
 
-  local player_id = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+  local player_id = GetPlayer()
   if not player_id then return end
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
   if not damage_model then return end
@@ -184,7 +226,7 @@ function OnWorldPreUpdate()
 
   respawn_ui_update = CreateRespawnGui(gui, disable_cessation,
     function()
-      local player_id = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+      local player_id = GetPlayer()
       if not player_id then
         print("failed to get player_id during respawn")
         return
@@ -217,7 +259,7 @@ function OnWorldPreUpdate()
       end
     end,
     function()
-      local player_id = EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+      local player_id = GetPlayer()
       if not player_id then
         print("failed to get player_id during game over")
         return
