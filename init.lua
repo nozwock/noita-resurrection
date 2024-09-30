@@ -211,10 +211,12 @@ local function CreateHoldKeyDownHandler(key_code)
     end
   end
 
+  ---@param frames integer
   function handler:HeldFor(frames)
     return self.frames_held >= frames
   end
 
+  ---@param frames integer
   function handler:HeldOnceFor(frames)
     return self:HeldFor(frames) and self.frames_held % frames == 0
   end
@@ -258,6 +260,7 @@ local function DropGold(amount, x, y)
 end
 
 local hold_spawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("spawn_point")))
+local spawn_point_hold_time = math.floor(ModSettingGet(utils:GetModSettingId("spawn_point_hold_time")))
 
 function OnWorldPreUpdate()
   GuiStartFrame(gui)
@@ -265,7 +268,7 @@ function OnWorldPreUpdate()
   ProcessDeferredTasks()
   hold_spawn_point_handler:Update()
 
-  if hold_spawn_point_handler:HeldOnceFor(120) then
+  if hold_spawn_point_handler:HeldOnceFor(spawn_point_hold_time) then
     local player_id = GetPlayer()
     if player_id ~= nil then
       local x, y, _ = EntityGetTransform(player_id)

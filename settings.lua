@@ -81,6 +81,16 @@ mod_settings = {
         ui_fn = CreateGuiSettingKeybind(),
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
+      {
+        id = "spawn_point_hold_time",
+        ui_name = "Spawn Point Hold Time",
+        value_default = 60,
+        value_min = 30,
+        value_max = 300,
+        value_display_multiplier = 1000 / 60,
+        value_display_formatting = " $0 ms",
+        scope = MOD_SETTING_SCOPE_RUNTIME
+      },
     }
   }
 }
