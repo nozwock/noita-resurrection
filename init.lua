@@ -12,6 +12,10 @@ local respawn_position = {
     "DESIGN_PLAYER_START_POS_Y"))
 } -- 227, -85
 
+local gui = GuiCreate()
+local draw_respawn_ui = false
+local respawn_ui_update = nil
+
 -- Why am I using different styling for function names? Don't think about it.
 
 local function IdFactory()
@@ -22,6 +26,46 @@ local function IdFactory()
     return id
   end
 end
+
+---@type DeferredTask[]
+local deferred_tasks = {}
+
+---@param frames number
+---@param fn function
+local function AddDeferredTask(frames, fn)
+  ---@param frames number
+  ---@param fn function
+  local function CreateDeferredTask(frames, fn)
+    ---@class DeferredTask
+    local state = { done = false, wait_frames = frames, task = fn }
+
+    function state:Update()
+      if self.wait_frames <= 0 then
+        self.task()
+        self.done = true
+      else
+        self.wait_frames = self.wait_frames - 1
+      end
+    end
+
+    return state
+  end
+
+  table.insert(deferred_tasks, CreateDeferredTask(frames, fn))
+end
+
+local function ProcessDeferredTasks()
+  local i = 1
+  while i <= #deferred_tasks do
+    deferred_tasks[i]:Update()
+    if deferred_tasks[i].done then
+      table.remove(deferred_tasks, i)
+    else
+      i = i + 1
+    end
+  end
+end
+
 
 local function centered_x(gui, object_width)
   local w, _ = GuiGetScreenDimensions(gui)
@@ -61,11 +105,6 @@ local function GuiDecoratedTitle(gui, id, y, title)
   GuiText(gui, 0, 5, title, 1, "data/fonts/font_pixel_huge.xml")
   GuiLayoutEnd(gui)
 end
-
-
-local gui = GuiCreate()
-local draw_respawn_ui = false
-local respawn_ui_update = nil
 
 local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
   local cessUpdateFrames = 0
@@ -123,7 +162,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     if GuiButton(gui, id, 14, 0, cancel_text) then
       clicked[id] = true
       disable_cessation()
-      cessUpdateFrames = cessUpdateFrames + 1
+      cessUpdateFrames = cessUpdateFrames + 1 -- todo: Use the DeferredTask API for this instead
     end
     hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
     if clicked[id] and cessUpdateFrames > 1 then
@@ -193,9 +232,38 @@ local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
+local function DropGold(amount, x, y)
+  local gold_nugget_amounts = { 200000, 10000, 1000, 200, 50, 10, 1 }
+  local gold_nuggets = {
+    [200000] = "data/entities/items/pickup/goldnugget_200000.xml",
+    [10000] = "data/entities/items/pickup/goldnugget_10000.xml",
+    [1000] = "data/entities/items/pickup/goldnugget_1000.xml",
+    [200] = "data/entities/items/pickup/goldnugget_200.xml",
+    [50] = "data/entities/items/pickup/goldnugget_50.xml",
+    [10] = "data/entities/items/pickup/goldnugget_10.xml",
+    [1] = "data/entities/items/pickup/goldnugget.xml",
+  }
+  local to_drop = {}
+
+  while amount ~= 0 do
+    for _, v in ipairs(gold_nugget_amounts) do
+      if v <= amount then
+        table.insert(to_drop, v)
+        amount = amount - v
+        break
+      end
+    end
+  end
+
+  for _, v in ipairs(to_drop) do
+    EntityLoad(gold_nuggets[v], x, y)
+  end
+end
+
 local hold_spawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("spawn_point")))
 
 function OnWorldPreUpdate()
+  ProcessDeferredTasks()
   hold_spawn_point_handler:Update()
 
   if hold_spawn_point_handler:HeldOnceFor(120) then
@@ -248,12 +316,25 @@ function OnWorldPreUpdate()
         ComponentGetValue2(damage_model, "max_hp") * ModSettingGet(utils:GetModSettingId("respawn_health")))
       GameRegenItemActionsInPlayer(player_id)
 
+      local player_x, player_y = EntityGetTransform(player_id)
       if not GameHasFlagRun("ending_game_completed") then
         EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
         EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
 
-        for _, effect in ipairs(status_effects) do
+        for _, effect in pairs(status_effects) do
           EntityRemoveStainStatusEffect(player_id, effect.id)
+        end
+
+        local wallet = assert(EntityGetFirstComponent(player_id, "WalletComponent"))
+        local money = ComponentGetValue2(wallet, "money")
+        local money_drop = math.floor(money * ModSettingGet(utils:GetModSettingId("gold_drop")))
+
+        if money_drop > 0 then
+          AddDeferredTask(0, function()
+            ComponentSetValue2(wallet, "money", money - money_drop)
+            DropGold(money_drop, player_x, player_y)
+            GamePrint(string.format("Lost %d Gold", money_drop))
+          end)
         end
       else
         ComponentSetValue2(damage_model, "hp", 0)
