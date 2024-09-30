@@ -40,7 +40,7 @@ local function AddDeferredTask(frames, fn)
     local state = { done = false, wait_frames = frames, task = fn }
 
     function state:Update()
-      if self.wait_frames <= 0 then
+      if self.wait_frames <= 0 and not self.done then
         self.task()
         self.done = true
       else
