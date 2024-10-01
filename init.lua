@@ -3,6 +3,7 @@ dofile("data/scripts/debug/keycodes.lua")
 dofile("data/scripts/status_effects/status_list.lua")
 dofile("mods/resurrection/files/scripts/locale.lua")
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
+local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type input
 
 
 local ONE_HP = 0.04
@@ -16,8 +17,6 @@ local respawn_position = {
 local gui = GuiCreate()
 local draw_respawn_ui = false
 local respawn_ui_update = nil
-
--- Why am I using different styling for function names? Don't think about it.
 
 ---@return fun():integer
 local function IdFactory()
@@ -68,10 +67,9 @@ local function ProcessDeferredTasks()
   end
 end
 
-
 ---@param gui gui
 ---@param object_width number
-local function centered_x(gui, object_width)
+local function CenteredX(gui, object_width)
   local w, _ = GuiGetScreenDimensions(gui)
   return math.floor((w / 2 - object_width / 2) / w * 100)
 end
@@ -140,7 +138,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     local ok_text_w, _ = GuiGetTextDimensions(gui, ok_text)
     local cancel_text_w, _ = GuiGetTextDimensions(gui, cancel_text)
 
-    local x_scale = centered_x(gui, ok_text_w + cancel_text_w + 14 + 2) -- 2 is the spacing
+    local x_scale = CenteredX(gui, ok_text_w + cancel_text_w + 14 + 2) -- 2 is the spacing
     GuiLayoutBeginHorizontal(gui, x_scale, 78)
 
     id = new_id()
@@ -200,31 +198,6 @@ local function CessatePlayer()
   return nil
 end
 
----@param key_code integer
-local function CreateHoldKeyDownHandler(key_code)
-  local handler = { key_code = key_code, frames_held = 0 }
-
-  function handler:Update()
-    if InputIsKeyDown(self.key_code) then
-      self.frames_held = self.frames_held + 1
-    else
-      self.frames_held = 0
-    end
-  end
-
-  ---@param frames integer
-  function handler:HeldFor(frames)
-    return self.frames_held >= frames
-  end
-
-  ---@param frames integer
-  function handler:HeldOnceFor(frames)
-    return self:HeldFor(frames) and self.frames_held % frames == 0
-  end
-
-  return handler
-end
-
 local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
@@ -260,7 +233,7 @@ local function DropGold(amount, x, y)
   end
 end
 
-local hold_respawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("respawn_point")))
+local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("respawn_point")))
 local respawn_point_hold_time = math.floor(ModSettingGet(utils:GetModSettingId("respawn_point_hold_time")))
 
 function OnModInit()

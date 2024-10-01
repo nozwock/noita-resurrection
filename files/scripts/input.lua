@@ -28,4 +28,29 @@ function mod:ListenInputKeyGroup(group)
   return nil
 end
 
+---@param key_code integer
+function mod:CreateHoldKeyDownHandler(key_code)
+  local handler = { key_code = key_code, frames_held = 0 }
+
+  function handler:Update()
+    if InputIsKeyDown(self.key_code) then
+      self.frames_held = self.frames_held + 1
+    else
+      self.frames_held = 0
+    end
+  end
+
+  ---@param frames integer
+  function handler:HeldFor(frames)
+    return self.frames_held >= frames
+  end
+
+  ---@param frames integer
+  function handler:HeldOnceFor(frames)
+    return self:HeldFor(frames) and self.frames_held % frames == 0
+  end
+
+  return handler
+end
+
 return mod
