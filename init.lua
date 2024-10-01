@@ -76,10 +76,10 @@ end
 
 ---`y` is percent based.
 ---@param gui gui
----@param id integer
+---@param new_id fun():integer
 ---@param y number
 ---@param title string
-local function GuiDecoratedTitle(gui, id, y, title)
+local function GuiDecoratedTitle(gui, new_id, y, title)
   title = string.upper(title)
 
   local edge_w, _ = GuiGetImageDimensions(gui, "data/ui_gfx/decorations/piece_small_left.png", 1)
@@ -96,11 +96,11 @@ local function GuiDecoratedTitle(gui, id, y, title)
   y = h * y / 100
 
   GuiLayoutBeginHorizontal(gui, decor_x, y, true, 0, 0)
-  GuiImage(gui, id, 0, 0, "data/ui_gfx/decorations/piece_small_left.png", 1, 1, 0, 0,
+  GuiImage(gui, new_id(), 0, 0, "data/ui_gfx/decorations/piece_small_left.png", 1, 1, 0, 0,
     GUI_RECT_ANIMATION_PLAYBACK.Loop)
-  GuiImage(gui, id, 0, 0, "data/ui_gfx/decorations/piece_small_middle.png", 1, middle_scale + padding_scale * 2,
+  GuiImage(gui, new_id(), 0, 0, "data/ui_gfx/decorations/piece_small_middle.png", 1, middle_scale + padding_scale * 2,
     1, 0, GUI_RECT_ANIMATION_PLAYBACK.Loop)
-  GuiImage(gui, id, 0, 0, "data/ui_gfx/decorations/piece_small_right.png",
+  GuiImage(gui, new_id(), 0, 0, "data/ui_gfx/decorations/piece_small_right.png",
     1, 1, 0, 0,
     GUI_RECT_ANIMATION_PLAYBACK.Loop)
   GuiLayoutEnd(gui)
@@ -126,12 +126,15 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     local id
     local new_id = IdFactory()
 
+    GuiAnimateBegin(gui)
+    GuiAnimateAlphaFadeIn(gui, new_id(), 0.04, 0.1, false)
+
     GuiZSet(gui, -1000)
     GuiImage(gui, new_id(), 0, 0, "data/debug/ui_background.png", 1, 1000)
     GuiZSet(gui, -1100)
 
     local title_text = string.upper(Locale("$respawn_title"))
-    GuiDecoratedTitle(gui, new_id(), 70, title_text)
+    GuiDecoratedTitle(gui, new_id, 70, title_text)
 
     local ok_text = Locale("  $respawn_ok")
     local cancel_text = Locale("  $respawn_cancel")
@@ -168,6 +171,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
 
     GuiLayoutEnd(gui)
+    GuiAnimateEnd(gui)
   end
 end
 
