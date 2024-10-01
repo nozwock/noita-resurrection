@@ -1,12 +1,12 @@
 dofile("mods/resurrection/files/scripts/defs.lua")
 
 ---@class utils
-local mod = {}
+local utils = {}
 
 ---Recursive `pairs`.
 ---@param t table
 ---@return fun():string|number, unknown
-function mod:rpairs(t)
+function utils:rpairs(t)
   return coroutine.wrap(
     function()
       for k, v in pairs(t) do
@@ -26,8 +26,8 @@ function mod:rpairs(t)
 end
 
 ---@param id string
-function mod:GetModSettingId(id)
+function utils:GetModSettingId(id)
   return MOD_ID .. "." .. id
 end
 
-return mod
+return utils
