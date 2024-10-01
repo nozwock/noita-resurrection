@@ -1,6 +1,7 @@
 dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/debug/keycodes.lua")
 dofile("data/scripts/status_effects/status_list.lua")
+dofile("mods/resurrection/files/scripts/locale.lua")
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 
 
@@ -131,11 +132,11 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
     GuiImage(gui, new_id(), 0, 0, "data/debug/ui_background.png", 1, 1000)
     GuiZSet(gui, -1100)
 
-    local title_text = string.upper("Unthethered")
+    local title_text = string.upper(Locale("$respawn_title"))
     GuiDecoratedTitle(gui, new_id(), 70, title_text)
 
-    local ok_text = "  Wake Up"
-    local cancel_text = "  Wisp Away"
+    local ok_text = Locale("  $respawn_ok")
+    local cancel_text = Locale("  $respawn_cancel")
     local ok_text_w, _ = GuiGetTextDimensions(gui, ok_text)
     local cancel_text_w, _ = GuiGetTextDimensions(gui, cancel_text)
 
@@ -262,6 +263,10 @@ end
 local hold_respawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("respawn_point")))
 local respawn_point_hold_time = math.floor(ModSettingGet(utils:GetModSettingId("respawn_point_hold_time")))
 
+function OnModInit()
+  dofile_once("mods/resurrection/files/scripts/on_init/appends.lua")
+end
+
 function OnWorldPreUpdate()
   GuiStartFrame(gui)
 
@@ -276,7 +281,7 @@ function OnWorldPreUpdate()
       respawn_position.y = y
 
       EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml", x, y)
-      GamePrint("Tethered Once More")
+      GamePrint(Locale("$respawn_set_msg"))
     end
   end
 
@@ -336,7 +341,7 @@ function OnWorldPreUpdate()
           AddDeferredTask(0, function()
             ComponentSetValue2(wallet, "money", money - money_drop)
             DropGold(money_drop, player_x, player_y)
-            GamePrint(string.format("Lost %d Gold", money_drop))
+            GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
           end)
         end
       else
