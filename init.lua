@@ -18,7 +18,7 @@ local respawn_ui_update = nil
 
 -- Why am I using different styling for function names? Don't think about it.
 
----@return fun():number
+---@return fun():integer
 local function IdFactory()
   local id = 100
 
