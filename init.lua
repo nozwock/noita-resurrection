@@ -259,16 +259,16 @@ local function DropGold(amount, x, y)
   end
 end
 
-local hold_spawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("spawn_point")))
-local spawn_point_hold_time = math.floor(ModSettingGet(utils:GetModSettingId("spawn_point_hold_time")))
+local hold_respawn_point_handler = CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("respawn_point")))
+local respawn_point_hold_time = math.floor(ModSettingGet(utils:GetModSettingId("respawn_point_hold_time")))
 
 function OnWorldPreUpdate()
   GuiStartFrame(gui)
 
   ProcessDeferredTasks()
-  hold_spawn_point_handler:Update()
+  hold_respawn_point_handler:Update()
 
-  if hold_spawn_point_handler:HeldOnceFor(spawn_point_hold_time) then
+  if hold_respawn_point_handler:HeldOnceFor(respawn_point_hold_time) then
     local player_id = GetPlayer()
     if player_id ~= nil then
       local x, y, _ = EntityGetTransform(player_id)

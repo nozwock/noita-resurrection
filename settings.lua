@@ -77,16 +77,16 @@ mod_settings = {
     foldable = true,
     settings = {
       {
-        id = "spawn_point",
-        ui_name = "Spawn Point",
-        ui_description = "Set the spawn point at the player's location.",
+        id = "respawn_point",
+        ui_name = "Respawn Point",
+        ui_description = "Set the respawn point at the player's location.",
         value_default = input.KEYS.Key_t,
         ui_fn = CreateGuiSettingKeybind(),
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
-        id = "spawn_point_hold_time",
-        ui_name = "Spawn Point Hold Time",
+        id = "respawn_point_hold_time",
+        ui_name = "Respawn Point Hold Time",
         value_default = 60,
         value_min = 30,
         value_max = 300,
