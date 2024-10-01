@@ -25,9 +25,23 @@ function utils:rpairs(t)
   )
 end
 
+utils.mod_settings_cache = {}
+
 ---@param id string
-function utils:GetModSettingId(id)
-  return MOD_ID .. "." .. id
+function utils:GetModSetting(id)
+  id = MOD_ID .. "." .. id
+  local setting = self.mod_settings_cache[id]
+  if setting ~= nil then
+    return setting
+  end
+
+  setting = ModSettingGet(id)
+  self.mod_settings_cache[id] = setting
+  return setting
+end
+
+function utils:ClearModSettingsCache()
+  self.mod_settings_cache = {}
 end
 
 return utils

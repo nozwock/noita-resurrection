@@ -233,11 +233,13 @@ local function DropGold(amount, x, y)
   end
 end
 
-local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(ModSettingGet(utils:GetModSettingId("respawn_point")))
-local respawn_point_hold_time = math.floor(ModSettingGet(utils:GetModSettingId("respawn_point_hold_time")))
-
+local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(utils:GetModSetting("respawn_point"))
 function OnModInit()
   dofile_once("mods/resurrection/files/scripts/on_init/appends.lua")
+end
+
+function OnPausedChanged()
+  utils:ClearModSettingsCache()
 end
 
 function OnWorldPreUpdate()
@@ -246,7 +248,8 @@ function OnWorldPreUpdate()
   ProcessDeferredTasks()
   hold_respawn_point_handler:Update()
 
-  if hold_respawn_point_handler:HeldOnceFor(respawn_point_hold_time) then
+  hold_respawn_point_handler.key_code = utils:GetModSetting("respawn_point")
+  if hold_respawn_point_handler:HeldOnceFor(math.floor(utils:GetModSetting("respawn_point_hold_time"))) then
     local player_id = GetPlayer()
     if player_id ~= nil then
       local x, y, _ = EntityGetTransform(player_id)
@@ -293,7 +296,7 @@ function OnWorldPreUpdate()
       end
 
       ComponentSetValue2(damage_model, "hp",
-        ComponentGetValue2(damage_model, "max_hp") * ModSettingGet(utils:GetModSettingId("respawn_health")))
+        ComponentGetValue2(damage_model, "max_hp") * utils:GetModSetting("respawn_health"))
       GameRegenItemActionsInPlayer(player_id)
 
       local player_x, player_y = EntityGetTransform(player_id)
@@ -308,7 +311,7 @@ function OnWorldPreUpdate()
 
         local wallet = assert(EntityGetFirstComponent(player_id, "WalletComponent"))
         local money = ComponentGetValue2(wallet, "money")
-        local money_drop = math.floor(money * ModSettingGet(utils:GetModSettingId("gold_drop")))
+        local money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
 
         if money_drop > 0 then
           AddDeferredTask(0, function()
