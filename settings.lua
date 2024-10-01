@@ -41,6 +41,8 @@ local function CreateGuiSettingKeybind()
     if value ~= nil then
       ModSettingSetNextValue(setting_id, value, false)
     end
+
+    mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
     mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
   end
 end
@@ -77,6 +79,7 @@ mod_settings = {
       {
         id = "spawn_point",
         ui_name = "Spawn Point",
+        ui_description = "Set the spawn point at the player's location.",
         value_default = input.KEYS.Key_t,
         ui_fn = CreateGuiSettingKeybind(),
         scope = MOD_SETTING_SCOPE_RUNTIME
