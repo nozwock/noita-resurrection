@@ -298,12 +298,12 @@ function OnWorldPreUpdate()
     function()
       local player_id = GetPlayer()
       if not player_id then
-        print("failed to get player_id during respawn")
+        utils:ErrLog("failed to get player_id during respawn")
         return
       end
       local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
       if not damage_model then
-        print("failed to get DamageModelComponent during respawn")
+        utils:ErrLog("failed to get DamageModelComponent during respawn")
         return
       end
 
@@ -345,12 +345,12 @@ function OnWorldPreUpdate()
     function()
       local player_id = GetPlayer()
       if not player_id then
-        print("failed to get player_id during game over")
+        utils:ErrLog("failed to get player_id during game over")
         return
       end
       local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
       if not damage_model then
-        print("failed to get DamageModelComponent during game over")
+        utils:ErrLog("failed to get DamageModelComponent during game over")
         return
       end
 

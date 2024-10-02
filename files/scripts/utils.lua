@@ -77,12 +77,10 @@ function utils:GlobalSetTypedValue(key, value)
       self:GlobalSetTypedValue(table_key, v)
     end
     key = MOD_ID .. "." .. key
-    self:Log("Setting: " .. key .. ": " .. self._TYPES.table .. table_keys)
     GlobalsSetValue(key, self._TYPES.table .. table_keys)
   else
     key = MOD_ID .. "." .. key
     value = self._TYPES[type(value)] .. tostring(value)
-    self:Log("Setting: " .. key .. ": " .. value)
     GlobalsSetValue(key, value)
   end
 end
@@ -111,7 +109,6 @@ function utils:GlobalGetTypedValue(key)
 
   key = MOD_ID .. "." .. key
   local value = GlobalsGetValue(key)
-  self:Log("Getting: " .. key .. ": " .. tostring(value))
   if not value or string.find(value, "^%d") == nil then
     return nil
   end
