@@ -245,6 +245,14 @@ function OnPausedChanged()
   utils:ClearModSettingsCache()
 end
 
+function OnWorldInitialized()
+  local respawn_position_ = utils:GlobalGetTypedValue("respawn_position")
+  if respawn_position_ ~= nil then
+    ---@diagnostic disable-next-line: cast-local-type
+    respawn_position = respawn_position_
+  end
+end
+
 ---@diagnostic disable-next-line: param-type-mismatch
 local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(utils:GetModSetting("respawn_point"))
 
@@ -262,6 +270,8 @@ function OnWorldPreUpdate()
       local x, y, _ = EntityGetTransform(player_id)
       respawn_position.x = x
       respawn_position.y = y
+
+      utils:GlobalSetTypedValue("respawn_position", respawn_position)
 
       EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml", x, y)
       GamePrint(Locale("$respawn_set_msg"))
