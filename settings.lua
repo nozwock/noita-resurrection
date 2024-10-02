@@ -132,6 +132,7 @@ mod_settings = {
     category_id = "keybinds",
     ui_name = "Keybinds",
     foldable = true,
+    _folded = true,
     settings = {
       {
         id = "respawn_point",
