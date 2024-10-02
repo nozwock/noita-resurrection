@@ -87,6 +87,11 @@ local function CreateGuiSettingKeybind()
     if GuiButton(gui, im_id, 0, 0, setting.ui_name .. ": " .. text) then
       awaiting_input = true
     end
+    local right_clicked = select(2, GuiGetPreviousWidgetInfo(gui))
+    if right_clicked then
+      value = setting.value_default
+      GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", 0, 0)
+    end
 
     GuiLayoutEnd(gui)
 
