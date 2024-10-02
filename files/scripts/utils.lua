@@ -3,6 +3,16 @@ dofile("mods/resurrection/files/scripts/defs.lua")
 ---@class utils
 local utils = {}
 
+---@param text string
+function utils:ErrLog(text)
+  print("[Error] [Resurrection]: " .. text)
+end
+
+---@param text string
+function utils:Log(text)
+  print("[Resurrection]: " .. text)
+end
+
 ---Recursive `pairs`.
 ---@param t table
 ---@return fun():string|number, unknown
@@ -67,12 +77,12 @@ function utils:GlobalSetTypedValue(key, value)
       self:GlobalSetTypedValue(table_key, v)
     end
     key = MOD_ID .. "." .. key
-    print("Setting: " .. key .. ": " .. self._TYPES.table .. table_keys)
+    self:Log("Setting: " .. key .. ": " .. self._TYPES.table .. table_keys)
     GlobalsSetValue(key, self._TYPES.table .. table_keys)
   else
     key = MOD_ID .. "." .. key
     value = self._TYPES[type(value)] .. tostring(value)
-    print("Setting: " .. key .. ": " .. value)
+    self:Log("Setting: " .. key .. ": " .. value)
     GlobalsSetValue(key, value)
   end
 end
@@ -101,7 +111,7 @@ function utils:GlobalGetTypedValue(key)
 
   key = MOD_ID .. "." .. key
   local value = GlobalsGetValue(key)
-  print("Getting: " .. key .. ": " .. tostring(value))
+  self:Log("Getting: " .. key .. ": " .. tostring(value))
   if not value or string.find(value, "^%d") == nil then
     return nil
   end
