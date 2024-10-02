@@ -36,7 +36,7 @@ local input = {
 
 ---@param key_code number
 function input:NameForKey(key_code)
-  for name, key in utils:rpairs({ self.MOUSE_KEYS, self.KEYS, self.JOYSTICK_KEYS }) do
+  for name, key in utils:rpairs({ self.MOUSE_KEYS, self.CONTROL_KEYS, self.KEYS, self.JOYSTICK_KEYS }) do
     if key_code == key then
       return tostring(name)
     end
