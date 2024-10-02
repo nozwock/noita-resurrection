@@ -80,6 +80,7 @@ local function CreateGuiSettingKeybind()
         value = key
       end
     else
+      ---@diagnostic disable-next-line: param-type-mismatch
       text = input:NameForKey(prev_value)
     end
 

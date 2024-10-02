@@ -237,7 +237,6 @@ local function DropGold(amount, x, y)
   end
 end
 
-local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(utils:GetModSetting("respawn_point"))
 function OnModInit()
   dofile_once("mods/resurrection/files/scripts/on_init/appends.lua")
 end
@@ -246,6 +245,9 @@ function OnPausedChanged()
   utils:ClearModSettingsCache()
 end
 
+---@diagnostic disable-next-line: param-type-mismatch
+local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(utils:GetModSetting("respawn_point"))
+
 function OnWorldPreUpdate()
   GuiStartFrame(gui)
 
@@ -253,6 +255,7 @@ function OnWorldPreUpdate()
   hold_respawn_point_handler:Update()
 
   hold_respawn_point_handler.key_code = utils:GetModSetting("respawn_point")
+  ---@diagnostic disable-next-line: param-type-mismatch
   if hold_respawn_point_handler:HeldOnceFor(math.floor(utils:GetModSetting("respawn_point_hold_time"))) then
     local player_id = GetPlayer()
     if player_id ~= nil then
