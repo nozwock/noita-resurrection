@@ -4,15 +4,25 @@ dofile("data/scripts/status_effects/status_list.lua")
 dofile("mods/resurrection/files/scripts/locale.lua")
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type input
+local meta_leveling = dofile_once("mods/resurrection/files/scripts/meta_leveling.lua") ---@type meta_leveling
 
 
 local ONE_HP = 0.04
-
 local respawn_position = {
   x = tonumber(MagicNumbersGetValue("DESIGN_PLAYER_START_POS_X")),
   y = tonumber(MagicNumbersGetValue(
     "DESIGN_PLAYER_START_POS_Y"))
 } -- 227, -85
+
+local deaths = 0
+local respawns = nil
+local respawn_system = utils:GetModSetting("respawn_system")
+if respawn_system == RESPAWN_SYSTEM.LIMITED then
+  respawns = utils:GetModSetting("limited_respawns")
+elseif respawn_system == RESPAWN_SYSTEM.META_LEVELING then
+  respawns = utils:GetModSetting("ml_starting_respawns")
+end
+local level_on_respawn_gain = 1
 
 local gui = GuiCreate()
 local draw_respawn_ui = false
@@ -243,6 +253,43 @@ local function DropGold(amount, x, y)
   end
 end
 
+local function PlayerShouldDie()
+  if respawn_system == RESPAWN_SYSTEM.UNLIMITED then
+    return false
+  else
+    return math.floor(respawns - deaths) <= 0
+  end
+end
+
+---@param damage_model component_id
+local function KillPlayer(damage_model)
+  ComponentSetValue2(damage_model, "hp", 0)
+  ComponentSetValue2(damage_model, "kill_now", true)
+end
+
+local function PlayerDied()
+  deaths = deaths + 1
+end
+
+---@param amount integer
+local function GainRespawn(amount)
+  respawns = respawns + amount
+  utils:GlobalSetTypedValue("respawns", respawns)
+  level_on_respawn_gain = meta_leveling:current_level()
+  utils:GlobalSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
+end
+
+local function UpdateRespawns()
+  if respawn_system ~= RESPAWN_SYSTEM.META_LEVELING then
+    return
+  end
+
+  local available_lv = meta_leveling:current_level() - level_on_respawn_gain
+  if available_lv >= utils:GetModSetting("ml_respawn_levels") then
+    GainRespawn(1)
+  end
+end
+
 function OnModInit()
   dofile_once("mods/resurrection/files/scripts/on_init/appends.lua")
 end
@@ -252,10 +299,17 @@ function OnPausedChanged()
 end
 
 function OnWorldInitialized()
-  local respawn_position_ = utils:GlobalGetTypedValue("respawn_position")
-  if respawn_position_ ~= nil then
-    ---@diagnostic disable-next-line: cast-local-type
-    respawn_position = respawn_position_
+  ---@diagnostic disable:cast-local-type
+  respawn_position = utils:GlobalGetTypedValue("respawn_position", respawn_position)
+  deaths = utils:GlobalGetOrSetTypedValue("deaths", deaths)
+  respawns = utils:GlobalGetOrSetTypedValue("respawns", respawns)
+  -- It might be fine to allow for changing respawn system on world load
+  respawn_system = utils:GlobalGetOrSetTypedValue("respawn_system", respawn_system)
+  level_on_respawn_gain = utils:GlobalGetOrSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
+  ---@diagnostic enable:cast-local-type
+
+  if respawn_system == RESPAWN_SYSTEM.META_LEVELING and utils:GetModSetting("ml_rewards") then
+    -- Append custom rewards
   end
 end
 
@@ -289,6 +343,8 @@ function OnWorldPreUpdate()
     return
   end
 
+  UpdateRespawns()
+
   local player_id = GetPlayer()
   if not player_id then return end
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
@@ -296,6 +352,13 @@ function OnWorldPreUpdate()
 
   ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") then return end
+
+  if PlayerShouldDie() then
+    KillPlayer(damage_model)
+    ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", false)
+    return
+  end
+  PlayerDied()
 
   local disable_cessation = CessatePlayer()
   if not disable_cessation then
@@ -347,8 +410,7 @@ function OnWorldPreUpdate()
           end)
         end
       else
-        ComponentSetValue2(damage_model, "hp", 0)
-        ComponentSetValue2(damage_model, "kill_now", true)
+        KillPlayer(damage_model)
       end
     end,
     function()
@@ -363,8 +425,7 @@ function OnWorldPreUpdate()
         return
       end
 
-      ComponentSetValue2(damage_model, "hp", 0)
-      ComponentSetValue2(damage_model, "kill_now", true)
+      KillPlayer(damage_model)
     end)
 
   draw_respawn_ui = true

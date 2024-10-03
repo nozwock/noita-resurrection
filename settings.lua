@@ -27,6 +27,11 @@ function utils:rpairs(t)
   )
 end
 
+---@param id string
+function utils:ResolveModSettingId(id)
+  return MOD_ID .. "." .. id
+end
+
 local input = {
   MOUSE_KEYS = { Mouse_left = 1, Mouse_right = 2, Mouse_middle = 3, Mouse_wheel_up = 4, Mouse_wheel_down = 5, Mouse_x1 = 6, Mouse_x2 = 7 },
   CONTROL_KEYS = { Key_RETURN = 40, Key_ESCAPE = 41, Key_BACKSPACE = 42, Key_TAB = 43, },
@@ -104,8 +109,94 @@ local function CreateGuiSettingKeybind()
   end
 end
 
+---Both `enum_values` and `info` must have the same size and keys of `info` should be the values in `enum_values`.
+---The values in the `info` table must have two items, the option name and tooltipo.
+---
+---**NOTE:** Order of `enum_values` must be consistent, so don't derive it using `pairs` over a `table`.
+---@param enum_values integer[]|string[]
+---@param info table
+local function CreateGuiSettingEnum(enum_values, info)
+  return function(mod_id, gui, in_main_menu, im_id, setting)
+    local setting_id = mod_setting_get_id(mod_id, setting)
+    local prev_value = ModSettingGetNextValue(setting_id) or setting.value_default
 
+    GuiLayoutBeginHorizontal(gui, mod_setting_group_x_offset, 0, true)
+
+    local value = nil
+
+    if info[prev_value] == nil then
+      prev_value = setting.value_default
+    end
+
+    if GuiButton(gui, im_id, 0, 0, setting.ui_name .. ": " .. info[prev_value][1]) then
+      for i, v in ipairs(enum_values) do
+        if prev_value == v then
+          value = enum_values[i % #enum_values + 1]
+          break
+        end
+      end
+    end
+    local right_clicked, hovered = select(2, GuiGetPreviousWidgetInfo(gui))
+    if right_clicked then
+      value = setting.value_default
+      GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", 0, 0)
+    end
+    if hovered then
+      GuiTooltip(gui, info[prev_value][2], "")
+    end
+
+    GuiLayoutEnd(gui)
+
+    if value ~= nil then
+      ModSettingSetNextValue(setting_id, value, false)
+    end
+
+    mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
+  end
+end
+
+
+local RESPAWN_SYSTEM = { UNLIMITED = 1, LIMITED = 2, META_LEVELING = 3 }
+local RESPAWN_SYSTEM_INFO = {
+  [RESPAWN_SYSTEM.UNLIMITED] = { "Unlimited", "Unlimited respawns." },
+  [RESPAWN_SYSTEM.LIMITED] = { "Limited", "A fixed number of respawns will be available." },
+  [RESPAWN_SYSTEM.META_LEVELING] = { "Meta Leveling", "Utilize Meta Leveling's XP system to earn respawns as you progress,\nand look forward to additional respawn-related rewards being added to the pool." }
+}
+
+---@type mod_settings_global
 mod_settings = {
+  {
+    not_setting = true,
+    ui_name = "*Most setting changes related to Respawn System won't take effect mid-game.",
+    ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+      GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
+      mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
+    end,
+    scope = MOD_SETTING_SCOPE_RUNTIME,
+  },
+  {
+    id = "respawn_system",
+    ui_name = "Respawn System",
+    value_default = RESPAWN_SYSTEM.UNLIMITED,
+    ui_fn = CreateGuiSettingEnum({ RESPAWN_SYSTEM.UNLIMITED, RESPAWN_SYSTEM.LIMITED, RESPAWN_SYSTEM.META_LEVELING },
+      RESPAWN_SYSTEM_INFO),
+    scope = MOD_SETTING_SCOPE_RUNTIME
+  },
+  {
+    id = "limited_respawns",
+    ui_name = "Limited Respawns",
+    ui_description = "The maximum amount of respawns to have.",
+    value_default = 3,
+    value_min = 1,
+    value_max = 50,
+    ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+      -- Values from `ModSettingGet` are only updated when in-game.
+      if ModSettingGetNextValue(utils:ResolveModSettingId("respawn_system")) == RESPAWN_SYSTEM.LIMITED then
+        mod_setting_number(mod_id, gui, in_main_menu, im_id, setting)
+      end
+    end,
+    scope = MOD_SETTING_SCOPE_RUNTIME
+  },
   {
     id = "respawn_health",
     ui_name = "Respawn Health",
@@ -127,6 +218,48 @@ mod_settings = {
     value_display_multiplier = 100,
     value_display_formatting = " $0%",
     scope = MOD_SETTING_SCOPE_RUNTIME
+  },
+  {
+    category_id = "meta_leveling_integration",
+    ui_name = "Meta Leveling Integration",
+    foldable = true,
+    _folded = true,
+    settings = {
+      {
+        not_setting = true,
+        ui_name = "*These settings are specific to the Meta Leveling respawn system.",
+        ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+          GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
+          mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
+        end,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+      },
+      {
+        id = "ml_starting_respawns",
+        ui_name = "Starting Respawns",
+        ui_description = "The amount of respawns you start with.",
+        value_default = 1,
+        value_min = 1,
+        value_max = 10,
+        scope = MOD_SETTING_SCOPE_RUNTIME
+      },
+      {
+        id = "ml_rewards",
+        ui_name = "New Rewards",
+        ui_description = "",
+        value_default = true,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+      },
+      {
+        id = "ml_respawn_levels",
+        ui_name = "Levels For Respawn",
+        ui_description = "Amount of level-ups required to gain a respawn.",
+        value_default = 5,
+        value_min = 1,
+        value_max = 50,
+        scope = MOD_SETTING_SCOPE_RUNTIME,
+      }
+    }
   },
   {
     category_id = "keybinds",
@@ -153,7 +286,7 @@ mod_settings = {
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
     }
-  }
+  },
 }
 
 -- This function is called to ensure the correct setting values are visible to the game. your mod's settings don't work if you don't have a function like this defined in settings.lua.
