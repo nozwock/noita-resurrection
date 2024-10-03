@@ -4,47 +4,9 @@ dofile("data/scripts/status_effects/status_list.lua")
 dofile("mods/resurrection/files/scripts/locale.lua")
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type input
+local tasks = dofile_once("mods/resurrection/files/scripts/tasks.lua") ---@type tasks
 local meta_leveling = dofile_once("mods/resurrection/files/scripts/meta_leveling.lua") ---@type meta_leveling
 
-
----@type DeferredTask[]
-local deferred_tasks = {}
-
----@param frames number
----@param fn function
-local function AddDeferredTask(frames, fn)
-  ---@param frames number
-  ---@param fn function
-  local function CreateDeferredTask(frames, fn)
-    ---@class DeferredTask
-    local state = { done = false, wait_frames = frames, task = fn }
-
-    function state:Update()
-      if self.wait_frames <= 0 and not self.done then
-        self.task()
-        self.done = true
-      else
-        self.wait_frames = self.wait_frames - 1
-      end
-    end
-
-    return state
-  end
-
-  table.insert(deferred_tasks, CreateDeferredTask(frames, fn))
-end
-
-local function ProcessDeferredTasks()
-  local i = 1
-  while i <= #deferred_tasks do
-    deferred_tasks[i]:Update()
-    if deferred_tasks[i].done then
-      table.remove(deferred_tasks, i)
-    else
-      i = i + 1
-    end
-  end
-end
 
 local ONE_HP = 0.04
 local respawn_position = {
@@ -63,7 +25,7 @@ elseif respawn_system == RESPAWN_SYSTEM.META_LEVELING then
 end
 if meta_leveling == nil then
   if respawn_system == RESPAWN_SYSTEM.META_LEVELING then
-    AddDeferredTask(60, function()
+    tasks:AddDeferredTask(60, function()
       GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
     end)
   end
@@ -170,7 +132,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
 
     if GuiButton(gui, id, 0, 0, ok_text) then
       disable_cessation()
-      AddDeferredTask(0, on_ok)
+      tasks:AddDeferredTask(0, on_ok)
       draw_respawn_ui = false
     end
     hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
@@ -183,7 +145,7 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
 
     if GuiButton(gui, id, 14, 0, cancel_text) then
       disable_cessation()
-      AddDeferredTask(0, on_cancel)
+      tasks:AddDeferredTask(0, on_cancel)
       draw_respawn_ui = false
     end
     hovered[id] = select(3, GuiGetPreviousWidgetInfo(gui))
@@ -327,7 +289,7 @@ local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(utils:GetModSe
 function OnWorldPreUpdate()
   GuiStartFrame(gui)
 
-  ProcessDeferredTasks()
+  tasks:ProcessDeferredTasks()
   hold_respawn_point_handler:Update()
 
   hold_respawn_point_handler.key_code = utils:GetModSetting("respawn_point")
@@ -411,7 +373,7 @@ function OnWorldPreUpdate()
         local money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
 
         if money_drop > 0 then
-          AddDeferredTask(0, function()
+          tasks:AddDeferredTask(0, function()
             ComponentSetValue2(wallet, "money", money - money_drop)
             DropGold(money_drop, player_x, player_y)
             GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
