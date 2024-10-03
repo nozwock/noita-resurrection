@@ -19,9 +19,9 @@ local deaths = 0
 local respawns = nil
 local respawn_system = utils:GetModSetting("respawn_system")
 if respawn_system == RESPAWN_SYSTEM.LIMITED then
-  respawns = utils:GetModSetting("limited_respawns")
+  respawns = math.floor(utils:GetModSetting("limited_respawns"))
 elseif respawn_system == RESPAWN_SYSTEM.META_LEVELING then
-  respawns = utils:GetModSetting("ml_starting_respawns")
+  respawns = math.floor(utils:GetModSetting("ml_starting_respawns"))
 end
 if meta_leveling == nil then
   if respawn_system == RESPAWN_SYSTEM.META_LEVELING then
@@ -52,6 +52,58 @@ end
 local function CenteredX(gui, object_width)
   local w, _ = GuiGetScreenDimensions(gui)
   return math.floor((w / 2 - object_width / 2) / w * 100)
+end
+
+---@param gui gui
+---@param new_id fun():integer
+---@param x number
+---@param y number
+---@param death_count integer
+local function DeathCounter(gui, new_id, x, y, death_count)
+  local death_filename = "mods/resurrection/files/gfx/ui/icon_death.png"
+  local tw, _ = GuiGetTextDimensions(gui, tostring(death_count), 1, 2, "data/fonts/font_small_numbers.xml")
+  local iw, _ = GuiGetImageDimensions(gui, death_filename)
+  x = x - (tw + iw + 2) - 4
+
+  GuiLayoutBeginHorizontal(gui, x, y, true)
+
+  GuiImage(gui, new_id(), 0, 0, death_filename, 1, 1, 0, 0, GUI_RECT_ANIMATION_PLAYBACK.Loop)
+  GuiColorSetForNextWidget(gui, 1, 1, 1, 0.75)
+  GuiText(gui, 2, 0, tostring(death_count), 1, "data/fonts/font_small_numbers.xml")
+
+  GuiLayoutEnd(gui)
+  return x, y
+end
+
+---@param gui gui
+---@param new_id fun():integer
+---@param x number
+---@param y number
+---@param respawn_count integer
+local function RespawnCounter(gui, new_id, x, y, respawn_count)
+  local revive_filename = "mods/resurrection/files/gfx/ui/icon_revive.png"
+  local tw, _ = GuiGetTextDimensions(gui, tostring(respawn_count), 1, 2, "data/fonts/font_small_numbers.xml")
+  local iw, _ = GuiGetImageDimensions(gui, revive_filename)
+  x = x - (tw + iw + 2) - 4
+
+  GuiLayoutBeginHorizontal(gui, x, y, true)
+
+  GuiImage(gui, new_id(), 0, -1, revive_filename, 1, 1, 0, 0, GUI_RECT_ANIMATION_PLAYBACK.Loop)
+  GuiColorSetForNextWidget(gui, 1, 1, 1, 0.75)
+  GuiText(gui, 1, 0, tostring(respawn_count), 1, "data/fonts/font_small_numbers.xml")
+
+  GuiLayoutEnd(gui)
+  return x, y
+end
+
+local function DrawStats(gui, new_id)
+  local w, _ = GuiGetScreenDimensions(gui)
+  local x, y = w - 38, 12
+  if respawn_system ~= RESPAWN_SYSTEM.UNLIMITED then
+    x, y = RespawnCounter(gui, new_id, x, y, deaths - respawns)
+    x = x - 1
+  end
+  DeathCounter(gui, new_id, x, y, deaths)
 end
 
 ---`y` is percent based.
@@ -98,13 +150,12 @@ local function CreateRespawnGui(gui, disable_cessation, on_ok, on_cancel)
   local hovered = {}
   local hover_prefix = ">"
 
-  return function()
+  return function(new_id)
     if not draw_respawn_ui then
       return
     end
 
     local id
-    local new_id = IdFactory()
 
     GuiAnimateBegin(gui)
     GuiAnimateAlphaFadeIn(gui, new_id(), 0.04, 0.1, false)
@@ -250,13 +301,11 @@ local function UpdateRespawns()
     utils:GlobalSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
   end
 
-  if respawn_system ~= RESPAWN_SYSTEM.META_LEVELING then
-    return
-  end
-
-  local available_lv = meta_leveling:current_level() - level_on_respawn_gain
-  if available_lv >= utils:GetModSetting("ml_respawn_levels") then
-    GainRespawn(1)
+  if respawn_system == RESPAWN_SYSTEM.META_LEVELING then
+    local available_lv = meta_leveling:current_level() - level_on_respawn_gain
+    if available_lv >= utils:GetModSetting("ml_respawn_levels") then
+      GainRespawn(1)
+    end
   end
 end
 
@@ -308,14 +357,19 @@ function OnWorldPreUpdate()
     end
   end
 
+  local new_id = IdFactory()
+
+  local player_id = GetPlayer()
+  if player_id then
+    DrawStats(gui, new_id)
+  end
   if respawn_ui_update ~= nil and draw_respawn_ui then
-    respawn_ui_update()
+    respawn_ui_update(new_id)
     return
   end
 
   UpdateRespawns()
 
-  local player_id = GetPlayer()
   if not player_id then return end
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
   if not damage_model then return end
