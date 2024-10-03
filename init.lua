@@ -81,9 +81,9 @@ end
 ---@param y number
 ---@param respawn_count integer
 local function RespawnCounter(gui, new_id, x, y, respawn_count)
-  local revive_filename = "mods/resurrection/files/gfx/ui/icon_revive.png"
+  local revive_filename = "mods/resurrection/files/gfx/ui/plus_with_angel_wings.png"
   local tw, _ = GuiGetTextDimensions(gui, tostring(respawn_count), 1, 2, "data/fonts/font_small_numbers.xml")
-  local iw, _ = GuiGetImageDimensions(gui, revive_filename)
+  local iw, _ = GuiGetImageDimensions(gui, revive_filename, 1)
   x = x - (tw + iw + 2) - 4
 
   GuiLayoutBeginHorizontal(gui, x, y, true)
