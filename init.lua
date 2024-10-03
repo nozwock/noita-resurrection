@@ -7,37 +7,6 @@ local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type 
 local meta_leveling = dofile_once("mods/resurrection/files/scripts/meta_leveling.lua") ---@type meta_leveling
 
 
-local ONE_HP = 0.04
-local respawn_position = {
-  x = tonumber(MagicNumbersGetValue("DESIGN_PLAYER_START_POS_X")),
-  y = tonumber(MagicNumbersGetValue(
-    "DESIGN_PLAYER_START_POS_Y"))
-} -- 227, -85
-
-local deaths = 0
-local respawns = nil
-local respawn_system = utils:GetModSetting("respawn_system")
-if respawn_system == RESPAWN_SYSTEM.LIMITED then
-  respawns = utils:GetModSetting("limited_respawns")
-elseif respawn_system == RESPAWN_SYSTEM.META_LEVELING then
-  respawns = utils:GetModSetting("ml_starting_respawns")
-end
-local level_on_respawn_gain = 1
-
-local gui = GuiCreate()
-local draw_respawn_ui = false
-local respawn_ui_update = nil
-
----@return fun():integer
-local function IdFactory()
-  local id = 100
-
-  return function()
-    id = id + 1
-    return id
-  end
-end
-
 ---@type DeferredTask[]
 local deferred_tasks = {}
 
@@ -74,6 +43,45 @@ local function ProcessDeferredTasks()
     else
       i = i + 1
     end
+  end
+end
+
+local ONE_HP = 0.04
+local respawn_position = {
+  x = tonumber(MagicNumbersGetValue("DESIGN_PLAYER_START_POS_X")),
+  y = tonumber(MagicNumbersGetValue(
+    "DESIGN_PLAYER_START_POS_Y"))
+} -- 227, -85
+
+local deaths = 0
+local respawns = nil
+local respawn_system = utils:GetModSetting("respawn_system")
+if respawn_system == RESPAWN_SYSTEM.LIMITED then
+  respawns = utils:GetModSetting("limited_respawns")
+elseif respawn_system == RESPAWN_SYSTEM.META_LEVELING then
+  respawns = utils:GetModSetting("ml_starting_respawns")
+end
+if meta_leveling == nil then
+  if respawn_system == RESPAWN_SYSTEM.META_LEVELING then
+    AddDeferredTask(60, function()
+      GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
+    end)
+  end
+  respawn_system = RESPAWN_SYSTEM.UNLIMITED -- fallback
+end
+local level_on_respawn_gain = 1
+
+local gui = GuiCreate()
+local draw_respawn_ui = false
+local respawn_ui_update = nil
+
+---@return fun():integer
+local function IdFactory()
+  local id = 100
+
+  return function()
+    id = id + 1
+    return id
   end
 end
 
@@ -271,15 +279,15 @@ local function PlayerDied()
   deaths = deaths + 1
 end
 
----@param amount integer
-local function GainRespawn(amount)
-  respawns = respawns + amount
-  utils:GlobalSetTypedValue("respawns", respawns)
-  level_on_respawn_gain = meta_leveling:current_level()
-  utils:GlobalSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
-end
-
 local function UpdateRespawns()
+  ---@param amount integer
+  local function GainRespawn(amount)
+    respawns = respawns + amount
+    utils:GlobalSetTypedValue("respawns", respawns)
+    level_on_respawn_gain = meta_leveling:current_level()
+    utils:GlobalSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
+  end
+
   if respawn_system ~= RESPAWN_SYSTEM.META_LEVELING then
     return
   end

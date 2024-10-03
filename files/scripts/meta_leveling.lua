@@ -1,3 +1,7 @@
+if not ModIsEnabled("meta_leveling") then
+  return nil
+end
+
 local MLP = dofile_once("mods/meta_leveling/files/scripts/meta_leveling_public.lua")
 
 ---@class meta_leveling
