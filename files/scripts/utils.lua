@@ -77,17 +77,20 @@ function utils:GlobalSetTypedValue(key, value)
       self:GlobalSetTypedValue(table_key, v)
     end
     key = MOD_ID .. "." .. key
+    -- self:Log("set: " .. key .. ": " .. self._TYPES.table .. table_keys)
     GlobalsSetValue(key, self._TYPES.table .. table_keys)
   else
     key = MOD_ID .. "." .. key
     value = self._TYPES[type(value)] .. tostring(value)
+    -- self:Log("set: " .. key .. ": " .. value)
     GlobalsSetValue(key, value)
   end
 end
 
 ---@param key string
+---@param default any
 ---@return GlobalValues
-function utils:GlobalGetTypedValue(key)
+function utils:GlobalGetTypedValue(key, default)
   ---@param keys string
   local function GetTable(keys)
     local t = {}
@@ -109,8 +112,9 @@ function utils:GlobalGetTypedValue(key)
 
   key = MOD_ID .. "." .. key
   local value = GlobalsGetValue(key)
+  -- self:Log("get: " .. key .. ": " .. tostring(value))
   if not value or string.find(value, "^%d") == nil then
-    return nil
+    return default
   end
 
   local type = tonumber(string.sub(value, 1, 1))
@@ -127,7 +131,23 @@ function utils:GlobalGetTypedValue(key)
     return nil
   end
 
-  return nil
+  return default
+end
+
+---Set value if it doesn't exist in the globals.
+---@param key string
+---@param default any
+---@return GlobalValues
+function utils:GlobalGetOrSetTypedValue(key, default)
+  local value = self:GlobalGetTypedValue(key)
+
+  if value ~= nil then
+    return value
+  elseif default ~= nil then
+    self:GlobalSetTypedValue(key, default)
+  end
+
+  return default
 end
 
 return utils
