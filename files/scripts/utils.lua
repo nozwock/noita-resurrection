@@ -3,14 +3,22 @@ local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type de
 ---@class utils
 local utils = {}
 
----@param text string
-function utils:ErrLog(text)
-  print("[Error] [Resurrection]: " .. text)
+function utils:ErrLog(...)
+  print("[Error] [Resurrection]: ", ...)
 end
 
----@param text string
-function utils:Log(text)
-  print("[Resurrection]: " .. text)
+function utils:Log(...)
+  print("[Resurrection]: ", ...)
+end
+
+---@param t table
+function utils:SerializeTable(t)
+  local s = { "\n{\n" }
+  for k, v in pairs(t) do
+    table.insert(s, "\t{ " .. tostring(k) .. "=" .. tostring(v) .. " },\n")
+  end
+  table.insert(s, "}")
+  return table.concat(s)
 end
 
 ---Recursive `pairs`.

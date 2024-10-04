@@ -2,11 +2,12 @@ dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/debug/keycodes.lua")
 dofile("data/scripts/status_effects/status_list.lua")
 dofile("mods/resurrection/files/scripts/locale.lua")
+local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type input
 local tasks = dofile_once("mods/resurrection/files/scripts/tasks.lua") ---@type tasks
+local respawn = dofile_once("mods/resurrection/files/scripts/respawn.lua") ---@type respawn
 local meta_leveling = dofile_once("mods/resurrection/files/scripts/meta_leveling.lua") ---@type meta_leveling
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
 
 
 local ONE_HP = 0.04
@@ -17,23 +18,6 @@ local respawn_position = {
 } -- 227, -85
 
 local deaths = 0
-local respawns = nil
-local respawn_system = utils:GetModSetting("respawn_system")
-if respawn_system == defs.RESPAWN_SYSTEM.LIMITED then
-  respawns = math.floor(utils:GetModSetting("limited_respawns"))
-elseif respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
-  respawns = math.floor(utils:GetModSetting("ml_starting_respawns"))
-end
-if meta_leveling == nil then
-  if respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
-    tasks:AddDeferredTask(60, function()
-      GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
-    end)
-  end
-  respawn_system = defs.RESPAWN_SYSTEM.UNLIMITED -- fallback
-end
-local level_on_respawn_gain = 1
-
 local gui = GuiCreate()
 local draw_respawn_ui = false
 local respawn_ui_update = nil
@@ -123,8 +107,8 @@ end
 local function DrawStats(gui, new_id)
   local w, _ = GuiGetScreenDimensions(gui)
   local x, y = w - 38, 12
-  if respawn_system ~= defs.RESPAWN_SYSTEM.UNLIMITED then
-    x, y = RespawnCounter(gui, new_id, x, y, respawns - deaths)
+  if respawn.shared.respawn_system ~= defs.RESPAWN_SYSTEM.UNLIMITED then
+    x, y = RespawnCounter(gui, new_id, x, y, respawn.shared.GetRespawnCount(respawn.shared) - deaths)
     x = x - 1
   end
   DeathCounter(gui, new_id, x, y, deaths)
@@ -299,10 +283,10 @@ local function DropGold(amount, x, y)
 end
 
 local function PlayerShouldDie()
-  if respawn_system == defs.RESPAWN_SYSTEM.UNLIMITED then
+  if respawn.shared.respawn_system == defs.RESPAWN_SYSTEM.UNLIMITED then
     return false
   else
-    return math.floor(respawns - deaths) <= 0
+    return math.floor(respawn.shared.GetRespawnCount(respawn.shared) - deaths) <= 0
   end
 end
 
@@ -316,23 +300,6 @@ local function PlayerDied()
   deaths = deaths + 1
 end
 
-local function UpdateRespawns()
-  ---@param amount integer
-  local function GainRespawn(amount)
-    respawns = respawns + amount
-    utils:GlobalSetTypedValue("respawns", respawns)
-    level_on_respawn_gain = meta_leveling:current_level()
-    utils:GlobalSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
-  end
-
-  if respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
-    local available_lv = meta_leveling:current_level() - level_on_respawn_gain
-    if available_lv >= utils:GetModSetting("ml_respawn_levels") then
-      GainRespawn(1)
-    end
-  end
-end
-
 function OnModInit()
   dofile_once("mods/resurrection/files/scripts/on_init/appends.lua")
 end
@@ -343,16 +310,21 @@ end
 
 function OnWorldInitialized()
   ---@diagnostic disable:cast-local-type
+  -- It might be fine to allow for changing respawn system on world load
+  respawn.shared:Init()
   respawn_position = utils:GlobalGetTypedValue("respawn_position", respawn_position)
   deaths = utils:GlobalGetOrSetTypedValue("deaths", deaths)
-  respawns = utils:GlobalGetOrSetTypedValue("respawns", respawns)
-  -- It might be fine to allow for changing respawn system on world load
-  respawn_system = utils:GlobalGetOrSetTypedValue("respawn_system", respawn_system)
-  level_on_respawn_gain = utils:GlobalGetOrSetTypedValue("level_on_respawn_gain", level_on_respawn_gain)
+  ---@diagnostic disable-next-line: assign-type-mismatch
+  respawn.level_on_respawn_gain = utils:GlobalGetOrSetTypedValue("level_on_respawn_gain", respawn.level_on_respawn_gain)
   ---@diagnostic enable:cast-local-type
 
-  if respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING and utils:GetModSetting("ml_rewards") then
-    -- Append custom rewards
+  if meta_leveling == nil then
+    if respawn.shared.respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
+      tasks:AddDeferredTask(60, function()
+        GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
+      end)
+    end
+    respawn.shared.respawn_system = defs.RESPAWN_SYSTEM.UNLIMITED -- fallback
   end
 end
 
@@ -392,7 +364,7 @@ function OnWorldPreUpdate()
     return
   end
 
-  UpdateRespawns()
+  respawn:UpdateRespawns()
 
   if not player_id then return end
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
