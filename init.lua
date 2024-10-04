@@ -383,7 +383,7 @@ function OnWorldPreUpdate()
 
   local disable_cessation = CessatePlayer()
   if not disable_cessation then
-    utils:Log("Failed to cessate the player entity.")
+    utils:ErrLog("Failed to cessate the player entity.")
     return
   end
 
