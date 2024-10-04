@@ -1,14 +1,14 @@
 ---@diagnostic disable: undefined-global
 local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
-local shared_respawn = dofile_once("mods/resurrection/files/scripts/shared/respawn.lua") ---@type shared_respawn
+local shared_revive = dofile_once("mods/resurrection/files/scripts/shared/revive.lua") ---@type shared_revive
 -- dofile_once("mods/meta_leveling/files/scripts/classes/private/rewards.lua")
 
 local function ToAddOnSetting()
   local to_add = utils:GetModSetting("ml_rewards")
   utils:Log("ToAddOnSetting:", tostring(to_add),
-    tostring(shared_respawn.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING))
-  if to_add and shared_respawn.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
+    tostring(shared_revive.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING))
+  if to_add and shared_revive.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
     return to_add
   end
   return false
@@ -39,11 +39,11 @@ local rewards = {
     probability = CreateProbabilityFnFromSettings("ml_reward_revive_chance", 0.6),
     custom_check = ToAddOnSetting,
     fn = function()
-      shared_respawn:AddRespawn(1)
+      shared_revive:AddRevive(1)
     end
   }
 }
 
-shared_respawn:Init()
+shared_revive:Init()
 
 ML.rewards_deck:add_rewards(rewards)

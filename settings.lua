@@ -159,8 +159,8 @@ end
 local RESPAWN_SYSTEM = { UNLIMITED = 1, LIMITED = 2, META_LEVELING = 3 }
 local RESPAWN_SYSTEM_INFO = {
   [RESPAWN_SYSTEM.UNLIMITED] = { "Unlimited", "Unlimited respawns." },
-  [RESPAWN_SYSTEM.LIMITED] = { "Limited", "A fixed number of respawns will be available." },
-  [RESPAWN_SYSTEM.META_LEVELING] = { "Meta Leveling", "Utilize Meta Leveling's XP system to earn respawns as you progress,\nand look forward to additional respawn-related rewards being added to the pool." }
+  [RESPAWN_SYSTEM.LIMITED] = { "Limited", "A fixed number of revives will be available." },
+  [RESPAWN_SYSTEM.META_LEVELING] = { "Meta Leveling", "Utilize Meta Leveling's XP system to earn revives as you progress,\nand look forward to additional revive-related rewards being added to the pool." }
 }
 
 ---@type mod_settings_global
@@ -183,9 +183,9 @@ mod_settings = {
     scope = MOD_SETTING_SCOPE_RUNTIME
   },
   {
-    id = "limited_respawns",
-    ui_name = "Limited Respawns",
-    ui_description = "The maximum amount of respawns to have.",
+    id = "limited_revives",
+    ui_name = "Limited Revives",
+    ui_description = "Maximum amount of revives to have.",
     value_default = 3,
     value_min = 1,
     value_max = 50,
@@ -235,18 +235,18 @@ mod_settings = {
         scope = MOD_SETTING_SCOPE_RUNTIME,
       },
       {
-        id = "ml_starting_respawns",
-        ui_name = "Starting Respawns",
-        ui_description = "The amount of respawns you start with.",
+        id = "ml_starting_revives",
+        ui_name = "Starting Revives",
+        ui_description = "Amount of revives you start with.",
         value_default = 1,
         value_min = 1,
         value_max = 10,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
-        id = "ml_respawn_levels",
-        ui_name = "Levels For Respawn",
-        ui_description = "Amount of level-ups required to gain a respawn.",
+        id = "ml_revive_levels",
+        ui_name = "Levels For Revive",
+        ui_description = "Amount of level-ups required to gain a revive.",
         value_default = 5,
         value_min = 1,
         value_max = 50,
