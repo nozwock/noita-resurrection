@@ -13,7 +13,7 @@ local respawn = {
 function respawn:GainRespawnOnLevelUp(amount)
   self.shared:AddRespawn(amount)
   self.level_on_respawn_gain = meta_leveling:current_level()
-  utils:GlobalSetTypedValue("level_on_respawn_gain", self.level_on_respawn_gain)
+  utils:GlobalSetTypedValue(const.globals.level_on_respawn_gain, self.level_on_respawn_gain)
 end
 
 function respawn:UpdateRespawns()

@@ -312,10 +312,11 @@ function OnWorldInitialized()
   ---@diagnostic disable:cast-local-type
   -- It might be fine to allow for changing respawn system on world load
   respawn.shared:Init()
-  respawn_position = utils:GlobalGetTypedValue("respawn_position", respawn_position)
-  deaths = utils:GlobalGetOrSetTypedValue("deaths", deaths)
+  respawn_position = utils:GlobalGetTypedValue(const.globals.respawn_position, respawn_position)
+  deaths = utils:GlobalGetOrSetTypedValue(const.globals.deaths, deaths)
   ---@diagnostic disable-next-line: assign-type-mismatch
-  respawn.level_on_respawn_gain = utils:GlobalGetOrSetTypedValue("level_on_respawn_gain", respawn.level_on_respawn_gain)
+  respawn.level_on_respawn_gain = utils:GlobalGetOrSetTypedValue(const.globals.level_on_respawn_gain,
+    respawn.level_on_respawn_gain)
   ---@diagnostic enable:cast-local-type
 
   if meta_leveling == nil then
@@ -346,7 +347,7 @@ function OnWorldPreUpdate()
       respawn_position.x = x
       respawn_position.y = y
 
-      utils:GlobalSetTypedValue("respawn_position", respawn_position)
+      utils:GlobalSetTypedValue(const.globals.respawn_position, respawn_position)
 
       EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml", x, y)
       GamePrint(Locale("$respawn_set_msg"))
