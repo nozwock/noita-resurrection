@@ -282,18 +282,21 @@ local function DropGold(amount, x, y)
   end
 end
 
-local function PlayerShouldDie()
+local function IsReviveAvailable()
   if revive.shared.respawn_system == const.RESPAWN_SYSTEM.UNLIMITED then
-    return false
+    return true
   else
-    return math.floor(revive.shared:GetReviveCount() - deaths) <= 0
+    return math.floor(revive.shared:GetReviveCount() - deaths) > 0
   end
 end
+
+local kill_player = false
 
 ---@param damage_model component_id
 local function KillPlayer(damage_model)
   ComponentSetValue2(damage_model, "hp", 0)
   ComponentSetValue2(damage_model, "kill_now", true)
+  kill_player = true
 end
 
 local function PlayerDied()
@@ -371,10 +374,12 @@ function OnWorldPreUpdate()
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
   if not damage_model then return end
 
-  ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
+  if not kill_player then
+    ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
+  end
   if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") then return end
 
-  if PlayerShouldDie() then
+  if not IsReviveAvailable() then
     KillPlayer(damage_model)
     ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", false)
     return
