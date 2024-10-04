@@ -62,7 +62,7 @@ utils._TYPES = {
   ["nil"] = 5
 }
 
----@alias GlobalValues boolean|string|number|nil|{[number|string]:GlobalValues}
+---@alias GlobalValues boolean|string|number|nil|{[number]:GlobalValues, [string]:GlobalValues}
 
 ---Keep keys simple ([\w_]+), otherwise the code might explode.
 ---There are no checks for the param types, don't mess up.
