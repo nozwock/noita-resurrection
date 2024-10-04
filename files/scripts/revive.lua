@@ -6,7 +6,7 @@ local shared_revive = dofile_once("mods/resurrection/files/scripts/shared/revive
 ---@class revive
 local revive = {
   shared = shared_revive,
-  level_on_revive_gain = 1
+  level_on_revive_gain = 0
 }
 
 ---@param amount integer
