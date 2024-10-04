@@ -179,6 +179,9 @@ end
 local function CessatePlayer()
   local player_id = EntityGetWithTag("player_unit")[1]
   if not player_id then return end
+  --- Compatibility with mods that remove polymorphism for player
+  local poly_compat = EntityHasTag(player_id, "polymorphable_NOT")
+  EntityRemoveTag(player_id, "polymorphable_NOT")
   GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
 
   local poly_player_id = EntityGetWithTag("polymorphed_cessation")[1]
@@ -192,6 +195,9 @@ local function CessatePlayer()
       GameAddFlagRun("msg_gods_looking2")
 
       return function()
+        if poly_compat then
+          EntityAddTag(player_id, "polymorphable_NOT")
+        end
         ComponentSetValue2(effect, "frames", 1)
         GameRemoveFlagRun("msg_gods_looking")
         GameRemoveFlagRun("msg_gods_looking2")
@@ -292,7 +298,10 @@ function OnWorldPreUpdate()
   if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") then return end
 
   local disable_cessation = CessatePlayer()
-  if not disable_cessation then return end
+  if not disable_cessation then
+    utils:Log("Failed to cessate the player entity.")
+    return
+  end
 
   respawn_ui_update = CreateRespawnGui(gui, disable_cessation,
     function()
