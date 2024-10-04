@@ -1,7 +1,7 @@
 ---@diagnostic disable: lowercase-global
 dofile("data/scripts/lib/mod_settings.lua")
 
-MOD_ID = "resurrection" -- This should match the name of your mod's folder.
+local MOD_ID = "resurrection" -- This should match the name of your mod's folder.
 
 local utils = {}
 
