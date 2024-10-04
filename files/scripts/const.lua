@@ -1,8 +1,8 @@
 ---@class const
 local const = {
   globals = {
-    deaths = "deaths",
-    respawns = "respawns",
+    deaths = "death_count",
+    respawns = "respawn_count",
     level_on_respawn_gain = "level_on_respawn_gain",
     respawn_position = "respawn_position",
     respawn_system = "respawn_system",
