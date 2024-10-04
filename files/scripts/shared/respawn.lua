@@ -24,7 +24,7 @@ end
 
 ---@param amount integer
 function respawn:AddRespawn(amount)
-  self.count = utils:GlobalGetOrSetTypedValue("respawns", self.count) + amount
+  self.count = self:GetRespawnCount() + amount
   utils:GlobalSetTypedValue("respawns", self.count)
 end
 
