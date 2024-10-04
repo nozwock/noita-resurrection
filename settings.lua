@@ -261,17 +261,18 @@ mod_settings = {
           {
             id = "ml_rewards",
             ui_name = "New Rewards",
-            ui_description = "",
+            ui_description = "Toggle custom rewards for Meta Leveling.",
             value_default = true,
             scope = MOD_SETTING_SCOPE_RUNTIME,
           },
           {
             id = "ml_reward_revive_chance",
             ui_name = "Revive Reward Chance",
-            ui_description = "",
             value_default = 0.6,
             value_min = 0,
             value_max = 1,
+            value_display_multiplier = 100,
+            value_display_formatting = " $0%",
             scope = MOD_SETTING_SCOPE_RUNTIME,
           },
         }
