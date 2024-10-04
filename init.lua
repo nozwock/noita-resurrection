@@ -88,7 +88,7 @@ local function DeathCounter(gui, new_id, x, y, death_count)
   GuiColorSetForNextWidget(gui, 1, 1, 1, 0.75)
   GuiText(gui, 2, 0, tostring(death_count), 1, "data/fonts/font_small_numbers.xml")
   if IsHoverBoxHovered(new_id(), x, y, tw + iw + 2, th) then
-    GuiTooltip(gui, string.format("Deaths: %d", death_count), "")
+    GuiTooltip(gui, string.format(Locale("$deaths_tooltip"), death_count), "")
   end
 
   GuiLayoutEnd(gui)
@@ -112,7 +112,7 @@ local function RespawnCounter(gui, new_id, x, y, respawn_count)
   GuiColorSetForNextWidget(gui, 1, 1, 1, 0.75)
   GuiText(gui, 1, 0, tostring(respawn_count), 1, "data/fonts/font_small_numbers.xml")
   if IsHoverBoxHovered(new_id(), x, y, tw + iw + 2, th) then
-    GuiTooltip(gui, string.format("Revives: %d", respawn_count), "")
+    GuiTooltip(gui, string.format(Locale("$revives_tooltip"), respawn_count), "")
   end
 
   GuiLayoutEnd(gui)
