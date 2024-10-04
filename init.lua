@@ -104,7 +104,7 @@ local function ReviveStatCounter(gui, new_id, x, y, revive_count)
   return x, y
 end
 
-local function DrawStats(gui, new_id)
+local function DrawHUDStats(gui, new_id)
   local w, _ = GuiGetScreenDimensions(gui)
   local x, y = w - 38, 12
   if revive.shared.respawn_system ~= const.RESPAWN_SYSTEM.UNLIMITED then
@@ -362,7 +362,7 @@ function OnWorldPreUpdate()
 
   local player_id = GetPlayer()
   if player_id then
-    DrawStats(gui, new_id)
+    DrawHUDStats(gui, new_id)
   end
   if respawn_ui_update ~= nil and draw_respawn_ui then
     respawn_ui_update(new_id)
