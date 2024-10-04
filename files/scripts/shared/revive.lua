@@ -10,10 +10,14 @@ local revive = {
 function revive:Init()
   self.respawn_system = utils:GlobalGetOrSetTypedValue(const.globals.respawn_system,
     utils:GetModSetting("respawn_system"))
-  if self.respawn_system == const.RESPAWN_SYSTEM.LIMITED then
-    self:_SetReviveCount(math.floor(utils:GetModSetting("limited_revives")))
-  elseif self.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
-    self:_SetReviveCount(math.floor(utils:GetModSetting("ml_starting_revives")))
+
+  local revive_count = self:GetReviveCount()
+  if not revive_count then
+    if self.respawn_system == const.RESPAWN_SYSTEM.LIMITED then
+      self:_SetReviveCount(math.floor(utils:GetModSetting("limited_revives")))
+    elseif self.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
+      self:_SetReviveCount(math.floor(utils:GetModSetting("ml_starting_revives")))
+    end
   end
 end
 
@@ -31,7 +35,11 @@ end
 
 ---@return integer|nil
 function revive:GetReviveCount()
-  return math.floor(utils:GlobalGetOrSetTypedValue(const.globals.revive_count, self._count))
+  local ret = utils:GlobalGetOrSetTypedValue(const.globals.revive_count, self._count)
+  if ret then
+    return math.floor(ret)
+  end
+  return ret
 end
 
 return revive

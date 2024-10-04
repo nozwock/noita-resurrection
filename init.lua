@@ -301,6 +301,7 @@ end
 
 local function PlayerDied()
   death_count = death_count + 1
+  utils:GlobalSetTypedValue(const.globals.death_count, death_count)
 end
 
 function OnModInit()

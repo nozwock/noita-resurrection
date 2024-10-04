@@ -149,6 +149,8 @@ end
 function utils:GlobalGetOrSetTypedValue(key, default)
   local value = self:GlobalGetTypedValue(key)
 
+  -- utils:Log("GetOrSet:", key, tostring(value), tostring(default))
+
   if value ~= nil then
     return value
   elseif default ~= nil then
