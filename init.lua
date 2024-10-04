@@ -17,7 +17,7 @@ local respawn_position = {
     "DESIGN_PLAYER_START_POS_Y"))
 } -- 227, -85
 
-local deaths = 0
+local death_count = 0
 local gui = GuiCreate()
 local draw_respawn_ui = false
 local respawn_ui_update = nil
@@ -108,10 +108,10 @@ local function DrawStats(gui, new_id)
   local w, _ = GuiGetScreenDimensions(gui)
   local x, y = w - 38, 12
   if revive.shared.respawn_system ~= const.RESPAWN_SYSTEM.UNLIMITED then
-    x, y = ReviveStatCounter(gui, new_id, x, y, revive.shared:GetReviveCount() - deaths)
+    x, y = ReviveStatCounter(gui, new_id, x, y, revive.shared:GetReviveCount() - death_count)
     x = x - 1
   end
-  DeathStatCounter(gui, new_id, x, y, deaths)
+  DeathStatCounter(gui, new_id, x, y, death_count)
 end
 
 ---`y` is percent based.
@@ -286,7 +286,7 @@ local function IsReviveAvailable()
   if revive.shared.respawn_system == const.RESPAWN_SYSTEM.UNLIMITED then
     return true
   else
-    return math.floor(revive.shared:GetReviveCount() - deaths) > 0
+    return math.floor(revive.shared:GetReviveCount() - death_count) > 0
   end
 end
 
@@ -300,7 +300,7 @@ local function KillPlayer(damage_model)
 end
 
 local function PlayerDied()
-  deaths = deaths + 1
+  death_count = death_count + 1
 end
 
 function OnModInit()
@@ -316,7 +316,7 @@ function OnWorldInitialized()
   -- It might be fine to allow for changing respawn system on world load
   revive.shared:Init()
   respawn_position = utils:GlobalGetTypedValue(const.globals.respawn_position, respawn_position)
-  deaths = utils:GlobalGetOrSetTypedValue(const.globals.death_count, deaths)
+  death_count = utils:GlobalGetOrSetTypedValue(const.globals.death_count, death_count)
   ---@diagnostic disable-next-line: assign-type-mismatch
   revive.level_on_revive_gain = utils:GlobalGetOrSetTypedValue(const.globals.level_on_revive_gain,
     revive.level_on_revive_gain)
