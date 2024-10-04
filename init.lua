@@ -54,6 +54,23 @@ local function CenteredX(gui, object_width)
   return math.floor((w / 2 - object_width / 2) / w * 100)
 end
 
+---@param x number
+---@param y number
+---@param width number
+---@param height number
+---@param dont_focus? boolean
+---@return boolean
+---@nodiscard
+function IsHoverBoxHovered(id, x, y, width, height, dont_focus)
+  local empty = "data/ui_gfx/empty.png"
+  if not dont_focus then
+    GuiOptionsAddForNextWidget(gui, GUI_OPTION.ForceFocusable)
+  end
+  GuiZSetForNextWidget(gui, -10000)
+  GuiImageNinePiece(gui, id, x, y, width, height, 1, empty, empty)
+  return select(3, GuiGetPreviousWidgetInfo(gui))
+end
+
 ---@param gui gui
 ---@param new_id fun():integer
 ---@param x number
@@ -61,7 +78,7 @@ end
 ---@param death_count integer
 local function DeathCounter(gui, new_id, x, y, death_count)
   local death_filename = "mods/resurrection/files/gfx/ui/icon_death.png"
-  local tw, _ = GuiGetTextDimensions(gui, tostring(death_count), 1, 2, "data/fonts/font_small_numbers.xml")
+  local tw, th = GuiGetTextDimensions(gui, tostring(death_count), 1, 2, "data/fonts/font_small_numbers.xml")
   local iw, _ = GuiGetImageDimensions(gui, death_filename)
   x = x - (tw + iw + 2) - 4
 
@@ -70,6 +87,9 @@ local function DeathCounter(gui, new_id, x, y, death_count)
   GuiImage(gui, new_id(), 0, 0, death_filename, 1, 1, 0, 0, GUI_RECT_ANIMATION_PLAYBACK.Loop)
   GuiColorSetForNextWidget(gui, 1, 1, 1, 0.75)
   GuiText(gui, 2, 0, tostring(death_count), 1, "data/fonts/font_small_numbers.xml")
+  if IsHoverBoxHovered(new_id(), x, y, tw + iw + 2, th) then
+    GuiTooltip(gui, string.format("Deaths: %d", death_count), "")
+  end
 
   GuiLayoutEnd(gui)
   return x, y
@@ -82,7 +102,7 @@ end
 ---@param respawn_count integer
 local function RespawnCounter(gui, new_id, x, y, respawn_count)
   local revive_filename = "mods/resurrection/files/gfx/ui/plus_with_angel_wings.png"
-  local tw, _ = GuiGetTextDimensions(gui, tostring(respawn_count), 1, 2, "data/fonts/font_small_numbers.xml")
+  local tw, th = GuiGetTextDimensions(gui, tostring(respawn_count), 1, 2, "data/fonts/font_small_numbers.xml")
   local iw, _ = GuiGetImageDimensions(gui, revive_filename, 1)
   x = x - (tw + iw + 2) - 4
 
@@ -91,6 +111,9 @@ local function RespawnCounter(gui, new_id, x, y, respawn_count)
   GuiImage(gui, new_id(), 0, -1, revive_filename, 1, 1, 0, 0, GUI_RECT_ANIMATION_PLAYBACK.Loop)
   GuiColorSetForNextWidget(gui, 1, 1, 1, 0.75)
   GuiText(gui, 1, 0, tostring(respawn_count), 1, "data/fonts/font_small_numbers.xml")
+  if IsHoverBoxHovered(new_id(), x, y, tw + iw + 2, th) then
+    GuiTooltip(gui, string.format("Revives: %d", respawn_count), "")
+  end
 
   GuiLayoutEnd(gui)
   return x, y
@@ -100,7 +123,7 @@ local function DrawStats(gui, new_id)
   local w, _ = GuiGetScreenDimensions(gui)
   local x, y = w - 38, 12
   if respawn_system ~= RESPAWN_SYSTEM.UNLIMITED then
-    x, y = RespawnCounter(gui, new_id, x, y, deaths - respawns)
+    x, y = RespawnCounter(gui, new_id, x, y, respawns - deaths)
     x = x - 1
   end
   DeathCounter(gui, new_id, x, y, deaths)
