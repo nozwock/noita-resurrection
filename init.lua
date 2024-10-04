@@ -2,7 +2,7 @@ dofile("data/scripts/lib/utilities.lua")
 dofile("data/scripts/debug/keycodes.lua")
 dofile("data/scripts/status_effects/status_list.lua")
 dofile("mods/resurrection/files/scripts/locale.lua")
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
+local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local input = dofile_once("mods/resurrection/files/scripts/input.lua") ---@type input
 local tasks = dofile_once("mods/resurrection/files/scripts/tasks.lua") ---@type tasks
@@ -107,7 +107,7 @@ end
 local function DrawStats(gui, new_id)
   local w, _ = GuiGetScreenDimensions(gui)
   local x, y = w - 38, 12
-  if respawn.shared.respawn_system ~= defs.RESPAWN_SYSTEM.UNLIMITED then
+  if respawn.shared.respawn_system ~= const.RESPAWN_SYSTEM.UNLIMITED then
     x, y = RespawnCounter(gui, new_id, x, y, respawn.shared.GetRespawnCount(respawn.shared) - deaths)
     x = x - 1
   end
@@ -283,7 +283,7 @@ local function DropGold(amount, x, y)
 end
 
 local function PlayerShouldDie()
-  if respawn.shared.respawn_system == defs.RESPAWN_SYSTEM.UNLIMITED then
+  if respawn.shared.respawn_system == const.RESPAWN_SYSTEM.UNLIMITED then
     return false
   else
     return math.floor(respawn.shared.GetRespawnCount(respawn.shared) - deaths) <= 0
@@ -319,12 +319,12 @@ function OnWorldInitialized()
   ---@diagnostic enable:cast-local-type
 
   if meta_leveling == nil then
-    if respawn.shared.respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
+    if respawn.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
       tasks:AddDeferredTask(60, function()
         GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
       end)
     end
-    respawn.shared.respawn_system = defs.RESPAWN_SYSTEM.UNLIMITED -- fallback
+    respawn.shared.respawn_system = const.RESPAWN_SYSTEM.UNLIMITED -- fallback
   end
 end
 

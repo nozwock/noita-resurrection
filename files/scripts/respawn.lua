@@ -1,4 +1,4 @@
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
+local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local meta_leveling = dofile_once("mods/resurrection/files/scripts/meta_leveling.lua") ---@type meta_leveling
 local shared_respawn = dofile_once("mods/resurrection/files/scripts/shared/respawn.lua") ---@type shared_respawn
@@ -17,7 +17,7 @@ function respawn:GainRespawnOnLevelUp(amount)
 end
 
 function respawn:UpdateRespawns()
-  if self.shared.respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
+  if self.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
     local available_lv = meta_leveling:current_level() - self.level_on_respawn_gain
     if available_lv >= utils:GetModSetting("ml_respawn_levels") then
       self:GainRespawnOnLevelUp(1)

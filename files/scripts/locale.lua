@@ -1,4 +1,4 @@
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
+local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 
 -- todo: If there's ever a demand for mod settings locale, then just use a csv parser-
 -- https://github.com/FourierTransformer/ftcsv
@@ -21,5 +21,5 @@ function ResolveLocalKey(key, sep)
   if sep == nil then
     sep = "_"
   end
-  return "$" .. defs.MOD_ID .. sep .. key:gsub("^%$", "")
+  return "$" .. const.MOD_ID .. sep .. key:gsub("^%$", "")
 end

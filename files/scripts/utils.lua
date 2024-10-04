@@ -1,4 +1,4 @@
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
+local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 
 ---@class utils
 local utils = {}
@@ -47,7 +47,7 @@ utils.mod_settings_cache = {}
 
 ---@param id string
 function utils:GetModSetting(id)
-  id = defs.MOD_ID .. "." .. id
+  id = const.MOD_ID .. "." .. id
   local setting = self.mod_settings_cache[id]
   if setting ~= nil then
     return setting
@@ -84,11 +84,11 @@ function utils:GlobalSetTypedValue(key, value)
       table_keys = table_keys .. table_key .. ","
       self:GlobalSetTypedValue(table_key, v)
     end
-    key = defs.MOD_ID .. "." .. key
+    key = const.MOD_ID .. "." .. key
     -- self:Log("set: " .. key .. ": " .. self._TYPES.table .. table_keys)
     GlobalsSetValue(key, self._TYPES.table .. table_keys)
   else
-    key = defs.MOD_ID .. "." .. key
+    key = const.MOD_ID .. "." .. key
     value = self._TYPES[type(value)] .. tostring(value)
     -- self:Log("set: " .. key .. ": " .. value)
     GlobalsSetValue(key, value)
@@ -118,7 +118,7 @@ function utils:GlobalGetTypedValue(key, default)
     return t
   end
 
-  key = defs.MOD_ID .. "." .. key
+  key = const.MOD_ID .. "." .. key
   local value = GlobalsGetValue(key)
   -- self:Log("get: " .. key .. ": " .. tostring(value))
   if not value or string.find(value, "^%d") == nil then

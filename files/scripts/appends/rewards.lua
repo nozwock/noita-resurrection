@@ -1,5 +1,5 @@
 ---@diagnostic disable: undefined-global
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
+local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local shared_respawn = dofile_once("mods/resurrection/files/scripts/shared/respawn.lua") ---@type shared_respawn
 -- dofile_once("mods/meta_leveling/files/scripts/classes/private/rewards.lua")
@@ -7,8 +7,8 @@ local shared_respawn = dofile_once("mods/resurrection/files/scripts/shared/respa
 local function ToAddOnSetting()
   local to_add = utils:GetModSetting("ml_rewards")
   utils:Log("ToAddOnSetting:", tostring(to_add),
-    tostring(shared_respawn.respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING))
-  if to_add and shared_respawn.respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
+    tostring(shared_respawn.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING))
+  if to_add and shared_respawn.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
     return to_add
   end
   return false

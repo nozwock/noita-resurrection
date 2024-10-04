@@ -1,4 +1,4 @@
-local defs = dofile_once("mods/resurrection/files/scripts/defs.lua") ---@type defs
+local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 
 ---@class shared_respawn
@@ -9,9 +9,9 @@ local respawn = {
 
 function respawn:Init()
   self.respawn_system = utils:GlobalGetOrSetTypedValue("respawn_system", utils:GetModSetting("respawn_system"))
-  if self.respawn_system == defs.RESPAWN_SYSTEM.LIMITED then
+  if self.respawn_system == const.RESPAWN_SYSTEM.LIMITED then
     self:_SetRespawnCount(math.floor(utils:GetModSetting("limited_respawns")))
-  elseif self.respawn_system == defs.RESPAWN_SYSTEM.META_LEVELING then
+  elseif self.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
     self:_SetRespawnCount(math.floor(utils:GetModSetting("ml_starting_respawns")))
   end
 end
