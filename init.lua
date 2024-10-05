@@ -380,9 +380,12 @@ function OnWorldPreUpdate()
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
   if not damage_model then return end
 
-  revive:UpdateRevives(function()
+  revive:UpdateRevives()
+
+  -- Revives get modified on the ML side too
+  if IsReviveAvailable() then
     kill_player_flag = false
-  end)
+  end
 
   if not kill_player_flag then
     ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
