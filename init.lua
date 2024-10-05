@@ -323,12 +323,10 @@ function OnWorldInitialized()
     revive.level_on_revive_gain)
   ---@diagnostic enable:cast-local-type
 
-  if meta_leveling == nil then
-    if revive.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
-      tasks:AddDeferredTask(60, function()
-        GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
-      end)
-    end
+  if meta_leveling == nil and revive.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
+    tasks:AddDeferredTask(60, function()
+      GamePrint("Meta Leveling is not enabled, falling back to the Unlimited Respawn System.")
+    end)
     revive.shared.respawn_system = const.RESPAWN_SYSTEM.UNLIMITED -- fallback
   end
 end
