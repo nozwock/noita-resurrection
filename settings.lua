@@ -59,10 +59,6 @@ function input:ListenInputKeyGroup(group)
   return nil
 end
 
--- This is a magic global that can be used to migrate settings to new mod versions.
--- Call mod_settings_get_version() before mod_settings_update() to get the old value.
-mod_settings_version = 1
-
 local function CreateGuiSettingKeybind()
   local awaiting_input = false
 
@@ -155,6 +151,25 @@ local function CreateGuiSettingEnum(enum_values, info)
   end
 end
 
+local function mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
+  local value = ModSettingGetNextValue(mod_setting_get_id(mod_id, setting))
+  local value_new = GuiSlider(gui, im_id, mod_setting_group_x_offset, 0, setting.ui_name, value, setting.value_min,
+    setting.value_max, setting.value_default, setting.value_display_multiplier or 1,
+    setting.value_display_formatting or "", 64)
+  value_new = math.floor(value_new + 0.5) -- Because the slider can return ranging from 1.8 to 2.3 while showing 2, just as an example
+  if value ~= value_new then
+    ModSettingSetNextValue(mod_setting_get_id(mod_id, setting), value_new, false)
+    mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, value, value_new)
+  end
+
+  mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
+end
+
+
+-- This is a magic global that can be used to migrate settings to new mod versions.
+-- Call mod_settings_get_version() before mod_settings_update() to get the old value.
+mod_settings_version = 2
+
 
 local RESPAWN_SYSTEM = { UNLIMITED = 1, LIMITED = 2, META_LEVELING = 3 }
 local RESPAWN_SYSTEM_INFO = {
@@ -192,7 +207,7 @@ mod_settings = {
     ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
       -- Values from `ModSettingGet` are only updated when in-game.
       if ModSettingGetNextValue(utils:ResolveModSettingId("respawn_system")) == RESPAWN_SYSTEM.LIMITED then
-        mod_setting_number(mod_id, gui, in_main_menu, im_id, setting)
+        mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
       end
     end,
     scope = MOD_SETTING_SCOPE_RUNTIME
@@ -241,6 +256,7 @@ mod_settings = {
         value_default = 1,
         value_min = 1,
         value_max = 10,
+        ui_fn = mod_setting_integer,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
@@ -250,6 +266,7 @@ mod_settings = {
         value_default = 5,
         value_min = 1,
         value_max = 50,
+        ui_fn = mod_setting_integer,
         scope = MOD_SETTING_SCOPE_RUNTIME,
       },
       {
@@ -307,9 +324,23 @@ mod_settings = {
   },
 }
 
+---Only pass in settings with number widget.
+---@param id string
+local function _FixIntegerSetting(id)
+  id = utils:ResolveModSettingId(id)
+  local v = ModSettingGetNextValue(id)
+  v = math.floor(v + 0.5)
+  ModSettingSetNextValue(id, v, false)
+end
+
 -- This function is called to ensure the correct setting values are visible to the game. your mod's settings don't work if you don't have a function like this defined in settings.lua.
 function ModSettingsUpdate(init_scope)
   local old_version = mod_settings_get_version(MOD_ID) -- This can be used to migrate some settings between mod versions.
+  if old_version == 1 then
+    _FixIntegerSetting("limited_revives")
+    _FixIntegerSetting("ml_starting_revives")
+    _FixIntegerSetting("ml_revive_levels")
+  end
   mod_settings_update(MOD_ID, mod_settings, init_scope)
 end
 

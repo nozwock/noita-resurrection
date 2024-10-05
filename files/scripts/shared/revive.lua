@@ -3,7 +3,7 @@ local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type 
 
 ---@class shared_revive
 local revive = {
-  _count = nil,
+  _count = nil, -- Important to keep it nil, only nil values are not written to global with the GetOrSet func
   respawn_system = nil
 }
 
@@ -13,10 +13,11 @@ function revive:Init()
 
   local revive_count = self:GetReviveCount()
   if not revive_count then
+    -- Make sure mod settings is returning integers
     if self.respawn_system == const.RESPAWN_SYSTEM.LIMITED then
-      self:_SetReviveCount(math.floor(utils:GetModSetting("limited_revives")))
+      self:_SetReviveCount(utils:GetModSetting("limited_revives"))
     elseif self.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
-      self:_SetReviveCount(math.floor(utils:GetModSetting("ml_starting_revives")))
+      self:_SetReviveCount(utils:GetModSetting("ml_starting_revives"))
     end
   end
 end
@@ -37,7 +38,7 @@ end
 function revive:GetReviveCount()
   local ret = utils:GlobalGetOrSetTypedValue(const.globals.revive_count, self._count)
   if ret then
-    return math.floor(ret)
+    return ret
   end
   return ret
 end
