@@ -46,6 +46,12 @@ end
 utils.mod_settings_cache = {}
 
 ---@param id string
+function utils:ResolveModSettingId(id)
+  return const.MOD_ID .. "." .. id
+end
+
+---Uses cache which needs to be reset on maunually, ideally do it within OnPauseChanged.
+---@param id string
 function utils:GetModSetting(id)
   id = const.MOD_ID .. "." .. id
   local setting = self.mod_settings_cache[id]

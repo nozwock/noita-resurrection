@@ -5,7 +5,7 @@ local shared_revive = dofile_once("mods/resurrection/files/scripts/shared/revive
 -- dofile_once("mods/meta_leveling/files/scripts/classes/private/rewards.lua")
 
 local function ToAddOnSetting()
-  local to_add = utils:GetModSetting("ml_rewards")
+  local to_add = ModSettingGet(utils:ResolveModSettingId("ml_rewards"))
   if to_add and shared_revive.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
     return to_add
   end
@@ -16,7 +16,7 @@ end
 ---@param default number
 local function CreateProbabilityFnFromSettings(key, default)
   return function()
-    local chance = utils:GetModSetting(key)
+    local chance = ModSettingGet(utils:ResolveModSettingId(key))
     if chance then
       return chance
     end
