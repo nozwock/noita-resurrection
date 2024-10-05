@@ -98,10 +98,10 @@ local function CreateGuiSettingKeybind()
 
     if value ~= nil then
       ModSettingSetNextValue(setting_id, value, false)
+      mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
     end
 
     mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
-    mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
   end
 end
 
@@ -145,9 +145,8 @@ local function CreateGuiSettingEnum(enum_values, info)
 
     if value ~= nil then
       ModSettingSetNextValue(setting_id, value, false)
+      mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
     end
-
-    mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, prev_value, value)
   end
 end
 
