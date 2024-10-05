@@ -18,9 +18,12 @@ local respawn_position = {
 } -- 227, -85
 
 local death_count = 0
+local kill_player_flag = false
+
 local gui = GuiCreate()
 local draw_respawn_ui = false
 local respawn_ui_update = nil
+
 
 ---@return fun():integer
 local function IdFactory()
@@ -290,13 +293,18 @@ local function IsReviveAvailable()
   end
 end
 
-local kill_player = false
-
 ---@param damage_model component_id
 local function KillPlayer(damage_model)
   ComponentSetValue2(damage_model, "hp", 0)
+  ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   ComponentSetValue2(damage_model, "kill_now", true)
-  kill_player = true
+  kill_player_flag = true
+end
+
+---@param damage_model component_id
+local function RemoveArtificialDeathFlags(damage_model)
+  ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", false)
+  ComponentSetValue2(damage_model, "kill_now", false)
 end
 
 local function PlayerDied()
@@ -367,22 +375,20 @@ function OnWorldPreUpdate()
     return
   end
 
-  revive:UpdateRevives()
 
   if not player_id then return end
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
   if not damage_model then return end
 
-  if not kill_player then
+  revive:UpdateRevives(function()
+    kill_player_flag = false
+  end)
+
+  if not kill_player_flag then
     ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   end
-  if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") then return end
+  if ComponentGetValue2(damage_model, "hp") >= ONE_HP or kill_player_flag then return end
 
-  if not IsReviveAvailable() then
-    KillPlayer(damage_model)
-    ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", false)
-    return
-  end
   PlayerDied()
 
   local disable_cessation = CessatePlayer()
@@ -433,6 +439,11 @@ function OnWorldPreUpdate()
             DropGold(money_drop, player_x, player_y)
             GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
           end)
+        end
+
+        if not IsReviveAvailable() then
+          RemoveArtificialDeathFlags(damage_model)
+          kill_player_flag = true
         end
       else
         KillPlayer(damage_model)
