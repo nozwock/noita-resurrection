@@ -10,7 +10,7 @@ local revive = {
 }
 
 ---@param amount integer
-function revive:GainReviveOnLevelUp(amount)
+function revive:_GainReviveOnLevelUp(amount)
   self.shared:AddRevive(amount)
   self.level_on_revive_gain = meta_leveling:current_level()
   utils:GlobalSetTypedValue(const.globals.level_on_revive_gain, self.level_on_revive_gain)
@@ -20,7 +20,7 @@ function revive:UpdateRevives()
   if self.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
     local available_lv = meta_leveling:current_level() - self.level_on_revive_gain
     if available_lv >= utils:GetModSetting("ml_revive_levels") then
-      self:GainReviveOnLevelUp(1)
+      self:_GainReviveOnLevelUp(1)
     end
   end
 end

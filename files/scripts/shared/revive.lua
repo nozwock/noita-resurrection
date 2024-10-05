@@ -12,8 +12,8 @@ function revive:Init()
     utils:GetModSetting("respawn_system"))
 
   local revive_count = self:GetReviveCount()
-  if not revive_count then
-    -- Make sure mod settings is returning integers
+  if not revive_count then -- If this is a new game
+    -- Make sure mod setting is returning integer
     if self.respawn_system == const.RESPAWN_SYSTEM.LIMITED then
       self:_SetReviveCount(utils:GetModSetting("limited_revives"))
     elseif self.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
@@ -36,11 +36,7 @@ end
 
 ---@return integer|nil
 function revive:GetReviveCount()
-  local ret = utils:GlobalGetOrSetTypedValue(const.globals.revive_count, self._count)
-  if ret then
-    return ret
-  end
-  return ret
+  return utils:GlobalGetOrSetTypedValue(const.globals.revive_count, self._count)
 end
 
 return revive
