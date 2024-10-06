@@ -181,7 +181,7 @@ local RESPAWN_SYSTEM_INFO = {
 mod_settings = {
   {
     not_setting = true,
-    ui_name = "*Most setting changes related to Respawn System won't take effect mid-game.",
+    ui_name = "Changes to respawn system or amount of revives require a new-game to take effect.",
     ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
       GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
       mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
@@ -241,7 +241,7 @@ mod_settings = {
     settings = {
       {
         not_setting = true,
-        ui_name = "*These settings are specific to the Meta Leveling respawn system.",
+        ui_name = "These settings are specific to the Meta Leveling respawn system.",
         ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
           GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
           mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
