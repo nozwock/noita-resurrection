@@ -102,6 +102,8 @@ local function CreateGuiSettingKeybind()
     end
 
     mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
+  end, function()
+    awaiting_input = false
   end
 end
 
@@ -176,6 +178,8 @@ local RESPAWN_SYSTEM_INFO = {
   [RESPAWN_SYSTEM.LIMITED] = { "Limited", "A fixed number of revives will be available." },
   [RESPAWN_SYSTEM.META_LEVELING] = { "Meta Leveling", "Utilize Meta Leveling's XP system to earn revives as you progress,\nand look forward to additional revive-related rewards being added to the pool." }
 }
+
+local respawn_point_keybind, respawn_point_keybind_reset = CreateGuiSettingKeybind()
 
 ---@type mod_settings_global
 mod_settings = {
@@ -306,7 +310,7 @@ mod_settings = {
         ui_name = "Respawn Point",
         ui_description = "Set the respawn point at the player's location.",
         value_default = input.KEYS.Key_t,
-        ui_fn = CreateGuiSettingKeybind(),
+        ui_fn = respawn_point_keybind,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
@@ -340,6 +344,7 @@ function ModSettingsUpdate(init_scope)
     _FixIntegerSetting("ml_starting_revives")
     _FixIntegerSetting("ml_revive_levels")
   end
+  respawn_point_keybind_reset()
   mod_settings_update(MOD_ID, mod_settings, init_scope)
 end
 
