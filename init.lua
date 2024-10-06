@@ -387,6 +387,11 @@ function OnWorldPreUpdate()
     kill_player_flag = false
   end
 
+  if GameHasFlagRun("ending_game_completed") then
+    RemoveArtificialDeathFlags(damage_model)
+    kill_player_flag = true
+  end
+
   if not kill_player_flag then
     ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   end
@@ -423,33 +428,29 @@ function OnWorldPreUpdate()
       GameRegenItemActionsInPlayer(player_id)
 
       local player_x, player_y = EntityGetTransform(player_id)
-      if not GameHasFlagRun("ending_game_completed") then
-        EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
-        EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
+      EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
+      EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
 
-        for _, effect in pairs(status_effects) do
-          EntityRemoveStainStatusEffect(player_id, effect.id)
-        end
-        ComponentSetValue2(damage_model, "mIsOnFire", false)
+      for _, effect in pairs(status_effects) do
+        EntityRemoveStainStatusEffect(player_id, effect.id)
+      end
+      ComponentSetValue2(damage_model, "mIsOnFire", false)
 
-        local wallet = assert(EntityGetFirstComponent(player_id, "WalletComponent"))
-        local money = ComponentGetValue2(wallet, "money")
-        local money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
+      local wallet = assert(EntityGetFirstComponent(player_id, "WalletComponent"))
+      local money = ComponentGetValue2(wallet, "money")
+      local money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
 
-        if money_drop > 0 then
-          tasks:AddDeferredTask(0, function()
-            ComponentSetValue2(wallet, "money", money - money_drop)
-            DropGold(money_drop, player_x, player_y)
-            GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
-          end)
-        end
+      if money_drop > 0 then
+        tasks:AddDeferredTask(0, function()
+          ComponentSetValue2(wallet, "money", money - money_drop)
+          DropGold(money_drop, player_x, player_y)
+          GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
+        end)
+      end
 
-        if not IsReviveAvailable() then
-          RemoveArtificialDeathFlags(damage_model)
-          kill_player_flag = true
-        end
-      else
-        KillPlayer(damage_model)
+      if not IsReviveAvailable() then
+        RemoveArtificialDeathFlags(damage_model)
+        kill_player_flag = true
       end
     end,
     function()
