@@ -59,6 +59,7 @@ function IsHoverBoxHovered(id, x, y, width, height, dont_focus)
   return select(3, GuiGetPreviousWidgetInfo(gui))
 end
 
+---`x` is with width of widget as offset.
 ---@param gui gui
 ---@param new_id fun():integer
 ---@param x number
@@ -83,6 +84,7 @@ local function DeathStatCounter(gui, new_id, x, y, death_count)
   return x, y
 end
 
+---`x` is with width of widget as offset.
 ---@param gui gui
 ---@param new_id fun():integer
 ---@param x number
@@ -429,7 +431,8 @@ function OnWorldPreUpdate()
 
       local player_x, player_y = EntityGetTransform(player_id)
       EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
-      EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y) -- Not sure why this exists
+      -- For clearing some area around the respawn point
+      EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y)
 
       for _, effect in pairs(status_effects) do
         EntityRemoveStainStatusEffect(player_id, effect.id)
