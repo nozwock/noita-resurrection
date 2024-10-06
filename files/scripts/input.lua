@@ -30,13 +30,14 @@ end
 
 ---@param key_code integer
 function input:CreateHoldKeyDownHandler(key_code)
-  local handler = { key_code = key_code, frames_held = 0 }
+  local handler = { key_code = key_code, frames_held = 0, held_once = false }
 
   function handler:Update()
     if InputIsKeyDown(self.key_code) then
       self.frames_held = self.frames_held + 1
     else
       self.frames_held = 0
+      self.held_once = false
     end
   end
 
@@ -47,7 +48,11 @@ function input:CreateHoldKeyDownHandler(key_code)
 
   ---@param frames integer
   function handler:HeldOnceFor(frames)
-    return self:HeldFor(frames) and self.frames_held % frames == 0
+    if self:HeldFor(frames) and self.frames_held % frames == 0 and not self.held_once then
+      self.held_once = true
+      return true
+    end
+    return false
   end
 
   return handler
