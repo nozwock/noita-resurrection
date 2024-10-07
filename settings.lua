@@ -238,6 +238,17 @@ mod_settings = {
     scope = MOD_SETTING_SCOPE_RUNTIME
   },
   {
+    id = "stat_hud_offset",
+    ui_name = "Stat HUD Offset",
+    ui_description = "Amount of pixels to offset HUD to the left.",
+    value_default = 0,
+    value_min = 0,
+    value_max = 200,
+    value_display_formatting = " x = $0",
+    ui_fn = mod_setting_integer,
+    scope = MOD_SETTING_SCOPE_RUNTIME
+  },
+  {
     category_id = "meta_leveling_integration",
     ui_name = "Meta Leveling Integration",
     foldable = true,

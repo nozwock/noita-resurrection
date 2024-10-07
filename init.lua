@@ -111,7 +111,7 @@ end
 
 local function DrawHUDStats(gui, new_id)
   local w, _ = GuiGetScreenDimensions(gui)
-  local x, y = w - 38, 12
+  local x, y = w - 38 - utils:GetModSetting("stat_hud_offset"), 12
   if revive.shared.respawn_system ~= const.RESPAWN_SYSTEM.UNLIMITED then
     x, y = ReviveStatCounter(gui, new_id, x, y, revive.shared:GetReviveCount() - death_count)
     x = x - 1
