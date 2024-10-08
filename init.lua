@@ -164,7 +164,7 @@ function OnWorldInitialized()
     end
 
     ComponentSetValue2(damage_model, "hp",
-      ComponentGetValue2(damage_model, "max_hp") * utils:GetModSetting("respawn_health"))
+      ComponentGetValue2(damage_model, "max_hp") * utils:GetModSetting("respawn_health") / 100)
     GameRegenItemActionsInPlayer(player_id)
 
     local player_x, player_y = EntityGetTransform(player_id)

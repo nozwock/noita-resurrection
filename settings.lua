@@ -169,7 +169,7 @@ end
 
 -- This is a magic global that can be used to migrate settings to new mod versions.
 -- Call mod_settings_get_version() before mod_settings_update() to get the old value.
-mod_settings_version = 2
+mod_settings_version = 3
 
 
 local RESPAWN_SYSTEM = { UNLIMITED = 1, LIMITED = 2, META_LEVELING = 3 }
@@ -219,11 +219,11 @@ mod_settings = {
     id = "respawn_health",
     ui_name = "Respawn Health",
     ui_description = "Fraction of health to respawn with.",
-    value_default = 0.5,
-    value_min = 0.1,
-    value_max = 1,
-    value_display_multiplier = 100,
+    value_default = 50,
+    value_min = 1,
+    value_max = 100,
     value_display_formatting = " $0%",
+    ui_fn = mod_setting_integer,
     scope = MOD_SETTING_SCOPE_RUNTIME
   },
   {
@@ -350,11 +350,15 @@ end
 -- This function is called to ensure the correct setting values are visible to the game. your mod's settings don't work if you don't have a function like this defined in settings.lua.
 function ModSettingsUpdate(init_scope)
   local old_version = mod_settings_get_version(MOD_ID) -- This can be used to migrate some settings between mod versions.
-  if old_version == 1 then
+  if old_version <= 1 then
     _FixIntegerSetting("limited_revives")
     _FixIntegerSetting("ml_starting_revives")
     _FixIntegerSetting("ml_revive_levels")
   end
+  if old_version <= 2 then
+    ModSettingSetNextValue(utils:ResolveModSettingId("respawn_health"), 50, false)
+  end
+
   respawn_point_keybind_reset()
   mod_settings_update(MOD_ID, mod_settings, init_scope)
 end
