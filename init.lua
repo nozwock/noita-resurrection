@@ -23,6 +23,10 @@ local final_kill_player_flag = false
 local out_of_revives = false
 
 
+local function GetPlayer()
+  return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
+end
+
 ---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
   local player_id = EntityGetWithTag("player_unit")[1]
@@ -44,7 +48,10 @@ local function CessatePlayer()
 
       return function()
         if poly_compat then
-          EntityAddTag(player_id, "polymorphable_NOT")
+          tasks:AddDeferredTask(0, function()
+            local player_id = GetPlayer()
+            EntityAddTag(player_id, "polymorphable_NOT")
+          end)
         end
         ComponentSetValue2(effect, "frames", 1)
         GameRemoveFlagRun("msg_gods_looking")
@@ -54,10 +61,6 @@ local function CessatePlayer()
   end
 
   return nil
-end
-
-local function GetPlayer()
-  return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
 ---@param amount integer
