@@ -19,7 +19,8 @@ local respawn_position = {
 } -- 227, -85
 
 local death_count = 0
-local kill_player_flag = false
+local final_kill_player_flag = false
+local out_of_revives = false
 
 
 ---You must wait a frame after running the returned clousure to de-polymorph.
@@ -103,7 +104,7 @@ local function KillPlayer(damage_model)
   ComponentSetValue2(damage_model, "hp", 0)
   ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   ComponentSetValue2(damage_model, "kill_now", true)
-  kill_player_flag = true
+  final_kill_player_flag = true
 end
 
 ---@param damage_model component_id
@@ -187,7 +188,7 @@ function OnWorldInitialized()
 
     if not IsReviveAvailable() then
       RemoveArtificialDeathFlags(damage_model)
-      kill_player_flag = true
+      out_of_revives = true
     end
   end, function()
     local player_id = GetPlayer()
@@ -248,19 +249,27 @@ function OnWorldPreUpdate()
   revive:UpdateRevives()
 
   -- Revives get modified on the ML side too
-  if IsReviveAvailable() then
-    kill_player_flag = false
+  if revive.shared.respawn_system ~= const.RESPAWN_SYSTEM.UNLIMITED and not final_kill_player_flag then
+    if IsReviveAvailable() then
+      if out_of_revives then
+        ComponentSetValue2(damage_model, "kill_now", false)
+        out_of_revives = false
+      end
+    elseif not out_of_revives then
+      RemoveArtificialDeathFlags(damage_model)
+      out_of_revives = true
+    end
   end
 
   if GameHasFlagRun("ending_game_completed") then
     RemoveArtificialDeathFlags(damage_model)
-    kill_player_flag = true
+    final_kill_player_flag = true
   end
 
-  if not kill_player_flag then
+  if not out_of_revives then
     ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   end
-  if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") or kill_player_flag then return end
+  if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") or final_kill_player_flag or out_of_revives then return end
 
   PlayerDied()
 
