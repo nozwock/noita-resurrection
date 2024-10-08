@@ -6,7 +6,7 @@ Yet another mod with a respawn system, with the difference being that you get to
 
 ### Installation
 
-- Press the [Download](https://github.com/nozwock/noita-resurrection/archive/refs/heads/master.zip) button.
+- Press the [Download](https://github.com/nozwock/noita-resurrection/archive/refs/heads/main.zip) button.
 - Extract the contents into your Noita `mods` folder.
 - Rename the folder from `noita-resurrection` to `resurrection`.
 
