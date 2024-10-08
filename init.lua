@@ -269,7 +269,7 @@ function OnWorldPreUpdate()
     final_kill_player_flag = true
   end
 
-  if not out_of_revives then
+  if not out_of_revives and not final_kill_player_flag then
     ComponentSetValue2(damage_model, "wait_for_kill_flag_on_death", true)
   end
   if ComponentGetValue2(damage_model, "hp") >= ONE_HP or ComponentGetValue2(damage_model, "kill_now") or final_kill_player_flag or out_of_revives then return end
