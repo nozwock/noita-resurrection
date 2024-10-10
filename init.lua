@@ -45,7 +45,6 @@ local CessatePlayerInfo = {
 ---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
   local poly_player_id = EntityGetWithTag("polymorphed_player")[1]
-
   if poly_player_id then
     local effect = GetFirstPolyGameEffect(poly_player_id)
     if not effect then return end
@@ -54,6 +53,7 @@ local function CessatePlayer()
     return nil, CessatePlayerInfo.DEFER_REPEAT
   end
 
+  -- local player_id = GetPlayer()
   local player_id = EntityGetWithTag("player_unit")[1]
   if not player_id then return end
   --- Compatibility with mods that remove polymorphism for player
@@ -67,7 +67,7 @@ local function CessatePlayer()
   local effect = GetFirstPolyGameEffect(poly_player_id)
   if not effect then return end
 
-  ComponentSetValue2(effect, "frames", 10 ^ 8) -- Not ideal
+  ComponentSetValue2(effect, "frames", -2) -- Any -ve value but not -1 for infinite duration with perma polymorph
   GameAddFlagRun("msg_gods_looking")
   GameAddFlagRun("msg_gods_looking2")
 
