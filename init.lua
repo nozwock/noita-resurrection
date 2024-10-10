@@ -27,6 +27,14 @@ local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
+local function GetNonPolyPlayer()
+  return EntityGetWithTag("player_unit")[1]
+end
+
+local function GetPolyPlayer()
+  return EntityGetWithTag("polymorphed_player")[1]
+end
+
 ---@param id entity_id
 local function GetFirstPolyGameEffect(id)
   local ids = EntityGetAllChildren(id)
@@ -44,7 +52,7 @@ local CessatePlayerInfo = {
 
 ---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
-  local poly_player_id = EntityGetWithTag("polymorphed_player")[1]
+  local poly_player_id = GetPolyPlayer()
   if poly_player_id then
     local effect = GetFirstPolyGameEffect(poly_player_id)
     if not effect then return end
@@ -54,7 +62,7 @@ local function CessatePlayer()
   end
 
   -- local player_id = GetPlayer()
-  local player_id = EntityGetWithTag("player_unit")[1]
+  local player_id = GetNonPolyPlayer()
   if not player_id then return end
   --- Compatibility with mods that remove polymorphism for player
   local poly_compat = EntityHasTag(player_id, "polymorphable_NOT")
@@ -261,7 +269,7 @@ function OnWorldPreUpdate()
 
   local new_id = gui:IdFactory()
 
-  local player_id = GetPlayer()
+  local player_id = GetNonPolyPlayer()
   if player_id then
     gui:DrawHUDStats(new_id, death_count)
   end
@@ -270,6 +278,7 @@ function OnWorldPreUpdate()
     return
   end
 
+  player_id = GetPlayer()
   if not player_id then return end
   local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
   if not damage_model then return end
