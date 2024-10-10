@@ -53,6 +53,7 @@ local CessatePlayerInfo = {
 
 ---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
+  local is_perma_poly = false
   local poly_player_id = GetPolyPlayer()
   if poly_player_id then
     local effect = GetPolyGameEffect(poly_player_id)
@@ -61,17 +62,19 @@ local function CessatePlayer()
       return
     end
     if ComponentGetValue2(effect, "frames") == -1 then
-      utils:Log("Skipping perma polyd entity")
-      return
+      is_perma_poly = true
+      EntityRemoveTag(poly_player_id, "polymorphed")
+      EntityAddTag(poly_player_id, "player_unit")
+    else
+      ComponentSetValue2(effect, "frames", 1)
+      return nil, CessatePlayerInfo.DEFER_REPEAT
     end
-    ComponentSetValue2(effect, "frames", 1)
-    return nil, CessatePlayerInfo.DEFER_REPEAT
   end
 
   local player_id = GetNonPolyPlayer()
   if not player_id then return end
   --- Compatibility with mods that remove polymorphism for player
-  local poly_compat = EntityHasTag(player_id, "polymorphable_NOT")
+  local no_poly_compat = EntityHasTag(player_id, "polymorphable_NOT")
   EntityRemoveTag(player_id, "polymorphable_NOT")
   local effect = GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
 
@@ -80,15 +83,22 @@ local function CessatePlayer()
     return
   end
 
-  ComponentSetValue2(effect, "frames", -2) -- Any -ve value but not -1 for infinite duration with perma polymorph
+  ComponentSetValue2(effect, "frames", -2) -- Any -ve value but not -1 for infinite duration without perma polymorph
   GameAddFlagRun("msg_gods_looking")
   GameAddFlagRun("msg_gods_looking2")
 
   return function()
-    if poly_compat then
+    if no_poly_compat then
       tasks:AddDeferredTask(0, function()
         local player_id = GetPlayer()
         EntityAddTag(player_id, "polymorphable_NOT")
+      end)
+    end
+    if is_perma_poly then
+      tasks:AddDeferredTask(0, function()
+        local player_id = GetPlayer()
+        EntityAddTag(player_id, "polymorphed")
+        EntityRemoveTag(player_id, "player_unit")
       end)
     end
     ComponentSetValue2(effect, "frames", 1)
