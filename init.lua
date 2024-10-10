@@ -36,14 +36,15 @@ local function GetPolyPlayer()
 end
 
 ---@param id entity_id
-local function GetFirstPolyGameEffect(id)
-  local ids = EntityGetAllChildren(id)
-  if not ids then return end
-  for _, id_ in ipairs(ids) do
-    if #EntityGetTags(id_) == 0 and EntityGetFirstComponent(id_, "GameEffectComponent") then
-      return EntityGetFirstComponent(id_, "GameEffectComponent")
+local function GetPolyGameEffect(id)
+  local poly_effect_names = { "POLYMORPH", "POLYMORPH_RANDOM", "POLYMORPH_UNSTABLE" } -- CESSATION not included
+  for _, effect_name in ipairs(poly_effect_names) do
+    local effect = GameGetGameEffect(id, effect_name)
+    if effect ~= 0 then
+      return effect
     end
   end
+  return nil
 end
 
 local CessatePlayerInfo = {
@@ -54,26 +55,30 @@ local CessatePlayerInfo = {
 local function CessatePlayer()
   local poly_player_id = GetPolyPlayer()
   if poly_player_id then
-    local effect = GetFirstPolyGameEffect(poly_player_id)
-    if not effect then return end
-    if ComponentGetValue2(effect, "frames") == -1 then return end -- Ignore if perma polymorphed_player
+    local effect = GetPolyGameEffect(poly_player_id)
+    if not effect then
+      utils:ErrLog("Failed to get GameEffect for polyd entity")
+      return
+    end
+    if ComponentGetValue2(effect, "frames") == -1 then
+      utils:Log("Skipping perma polyd entity")
+      return
+    end
     ComponentSetValue2(effect, "frames", 1)
     return nil, CessatePlayerInfo.DEFER_REPEAT
   end
 
-  -- local player_id = GetPlayer()
   local player_id = GetNonPolyPlayer()
   if not player_id then return end
   --- Compatibility with mods that remove polymorphism for player
   local poly_compat = EntityHasTag(player_id, "polymorphable_NOT")
   EntityRemoveTag(player_id, "polymorphable_NOT")
-  GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
+  local effect = GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
 
-  poly_player_id = EntityGetWithTag("polymorphed_cessation")[1]
-  if not poly_player_id then return end
-
-  local effect = GetFirstPolyGameEffect(poly_player_id)
-  if not effect then return end
+  if not effect then
+    utils:ErrLog("Failed to get poly game effect after cessation")
+    return
+  end
 
   ComponentSetValue2(effect, "frames", -2) -- Any -ve value but not -1 for infinite duration with perma polymorph
   GameAddFlagRun("msg_gods_looking")
