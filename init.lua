@@ -27,8 +27,33 @@ local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
+---@param id entity_id
+local function GetFirstPolyGameEffect(id)
+  local ids = EntityGetAllChildren(id)
+  if not ids then return end
+  for _, id_ in ipairs(ids) do
+    if #EntityGetTags(id_) == 0 and EntityGetFirstComponent(id_, "GameEffectComponent") then
+      return EntityGetFirstComponent(id_, "GameEffectComponent")
+    end
+  end
+end
+
+local CessatePlayerInfo = {
+  DEFER_REPEAT = 1
+}
+
 ---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
+  local poly_player_id = EntityGetWithTag("polymorphed_player")[1]
+
+  if poly_player_id then
+    local effect = GetFirstPolyGameEffect(poly_player_id)
+    if not effect then return end
+    if ComponentGetValue2(effect, "frames") == -1 then return end -- Ignore if perma polymorphed_player
+    ComponentSetValue2(effect, "frames", 1)
+    return nil, CessatePlayerInfo.DEFER_REPEAT
+  end
+
   local player_id = EntityGetWithTag("player_unit")[1]
   if not player_id then return end
   --- Compatibility with mods that remove polymorphism for player
@@ -36,31 +61,27 @@ local function CessatePlayer()
   EntityRemoveTag(player_id, "polymorphable_NOT")
   GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
 
-  local poly_player_id = EntityGetWithTag("polymorphed_cessation")[1]
+  poly_player_id = EntityGetWithTag("polymorphed_cessation")[1]
   if not poly_player_id then return end
 
-  for _, id in ipairs(assert(EntityGetAllChildren(poly_player_id))) do
-    if #EntityGetTags(id) == 0 then
-      local effect = assert(EntityGetFirstComponent(id, "GameEffectComponent"))
-      ComponentSetValue2(effect, "frames", 10 ^ 6) -- Not ideal
-      GameAddFlagRun("msg_gods_looking")
-      GameAddFlagRun("msg_gods_looking2")
+  local effect = GetFirstPolyGameEffect(poly_player_id)
+  if not effect then return end
 
-      return function()
-        if poly_compat then
-          tasks:AddDeferredTask(0, function()
-            local player_id = GetPlayer()
-            EntityAddTag(player_id, "polymorphable_NOT")
-          end)
-        end
-        ComponentSetValue2(effect, "frames", 1)
-        GameRemoveFlagRun("msg_gods_looking")
-        GameRemoveFlagRun("msg_gods_looking2")
-      end
+  ComponentSetValue2(effect, "frames", 10 ^ 8) -- Not ideal
+  GameAddFlagRun("msg_gods_looking")
+  GameAddFlagRun("msg_gods_looking2")
+
+  return function()
+    if poly_compat then
+      tasks:AddDeferredTask(0, function()
+        local player_id = GetPlayer()
+        EntityAddTag(player_id, "polymorphable_NOT")
+      end)
     end
+    ComponentSetValue2(effect, "frames", 1)
+    GameRemoveFlagRun("msg_gods_looking")
+    GameRemoveFlagRun("msg_gods_looking2")
   end
-
-  return nil
 end
 
 ---@param amount integer
@@ -177,11 +198,14 @@ function OnWorldInitialized()
     end
     ComponentSetValue2(damage_model, "mIsOnFire", false)
 
-    local wallet = assert(EntityGetFirstComponent(player_id, "WalletComponent"))
-    local money = ComponentGetValue2(wallet, "money")
-    local money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
+    local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
+    local money, money_drop = 0, 0
+    if wallet then
+      money = ComponentGetValue2(wallet, "money")
+      money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
+    end
 
-    if money_drop > 0 then
+    if wallet and money_drop > 0 then
       tasks:AddDeferredTask(0, function()
         ComponentSetValue2(wallet, "money", money - money_drop)
         DropGold(money_drop, player_x, player_y)
@@ -276,12 +300,16 @@ function OnWorldPreUpdate()
 
   PlayerDied()
 
-  local remove_cessation = CessatePlayer()
-  gui.respawn_gui.remove_cessation = remove_cessation
-  if not remove_cessation then
+  local remove_cessation, info = CessatePlayer()
+  if info == CessatePlayerInfo.DEFER_REPEAT then
+    tasks:AddDeferredTask(0, function()
+      local remove_cessation = CessatePlayer()
+      gui.respawn_gui.remove_cessation = remove_cessation
+    end)
+  elseif not remove_cessation then
     utils:ErrLog("Failed to cessate the player entity.")
-    return
   end
+  gui.respawn_gui.remove_cessation = remove_cessation
 
   gui.draw_respawn_gui = true
 end
