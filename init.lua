@@ -196,6 +196,7 @@ function OnWorldInitialized()
     for _, effect in pairs(status_effects) do
       EntityRemoveStainStatusEffect(player_id, effect.id)
     end
+    ComponentSetValue2(damage_model, "is_on_fire", false)
     ComponentSetValue2(damage_model, "mIsOnFire", false)
 
     local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
