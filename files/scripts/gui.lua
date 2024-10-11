@@ -10,14 +10,8 @@ local revive = dofile_once("mods/resurrection/files/scripts/revive.lua") ---@typ
 local gui = {
   gui = GuiCreate(),
   respawn_gui = nil, ---@type RespawnGui?
-  draw_respawn_gui = false
 }
 
----@param value bool
-function gui:SetDrawRespawnGui(value)
-  self.draw_respawn_gui = value
-  utils:GlobalSetTypedValue(const.globals.draw_respawn_gui, self.draw_respawn_gui)
-end
 
 function gui:StartFrame()
   GuiStartFrame(self.gui)
@@ -158,6 +152,7 @@ end
 function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
   ---@class RespawnGui
   local state = {
+    draw_gui = false,
     remove_cessation = remove_cessation,
     on_ok = on_ok,
     on_cancel = on_cancel,
@@ -165,10 +160,16 @@ function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
     hover_prefix = ">"
   }
 
+  ---@param value bool
+  function state:SetDrawGui(value)
+    self.draw_gui = value
+    utils:GlobalSetTypedValue(const.globals.draw_respawn_gui, self.draw_gui)
+  end
+
   ---@param state RespawnGui
   ---@param new_id fun():integer
   function state.Draw(state, new_id)
-    if not self.draw_respawn_gui then
+    if not state.draw_gui then
       return
     end
 
@@ -201,7 +202,7 @@ function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
     if GuiButton(self.gui, id, 0, 0, ok_text) then
       state.remove_cessation()
       tasks:AddDeferredTask(0, state.on_ok)
-      self:SetDrawRespawnGui(false)
+      state:SetDrawGui(false)
     end
     state.hovered[id] = select(3, GuiGetPreviousWidgetInfo(self.gui))
 
@@ -214,7 +215,7 @@ function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
     if GuiButton(self.gui, id, 14, 0, cancel_text) then
       state.remove_cessation()
       tasks:AddDeferredTask(0, state.on_cancel)
-      self:SetDrawRespawnGui(false)
+      state:SetDrawGui(false)
     end
     state.hovered[id] = select(3, GuiGetPreviousWidgetInfo(self.gui))
 

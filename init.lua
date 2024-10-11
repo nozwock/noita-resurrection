@@ -164,7 +164,6 @@ function OnWorldInitialized()
   death_count = utils:GlobalGetOrSetTypedValue(const.globals.death_count, death_count)
   revive.level_on_revive_gain = utils:GlobalGetOrSetTypedValue(const.globals.level_on_revive_gain,
     revive.level_on_revive_gain)
-  gui.draw_respawn_gui = utils:GlobalGetOrSetTypedValue(const.globals.draw_respawn_gui, gui.draw_respawn_gui)
   ---@diagnostic enable:cast-local-type,assign-type-mismatch
 
   if meta_leveling == nil and revive.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
@@ -267,6 +266,12 @@ function OnWorldInitialized()
 
       KillPlayer(damage_model)
     end)
+
+  ---@diagnostic disable-next-line: assign-type-mismatch
+  gui.respawn_gui.draw_gui = utils:GlobalGetOrSetTypedValue(const.globals.draw_respawn_gui,
+    gui.respawn_gui.draw_gui)
+
+  assert(gui.respawn_gui)
 end
 
 ---@diagnostic disable-next-line: param-type-mismatch
@@ -300,7 +305,7 @@ function OnWorldPreUpdate()
   if player_id then
     gui:DrawHUDStats(new_id, death_count)
   end
-  if gui.draw_respawn_gui then
+  if gui.respawn_gui.draw_gui then
     gui.respawn_gui:Draw(new_id)
     return
   end
@@ -341,5 +346,5 @@ function OnWorldPreUpdate()
     utils:ErrLog("Failed to cessate the player entity.")
   end
 
-  gui:SetDrawRespawnGui(true)
+  gui.respawn_gui:SetDrawGui(true)
 end
