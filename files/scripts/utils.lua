@@ -173,7 +173,7 @@ function utils:GlobalGetTypedValue(key, default)
   local type = tonumber(string.sub(value, 1, 1))
   value = string.sub(value, 2, #value)
   if type == self._TYPES.boolean then
-    return tonumber(value) ~= 0
+    return value == "true"
   elseif type == self._TYPES.number then
     return tonumber(value)
   elseif type == self._TYPES.string then
