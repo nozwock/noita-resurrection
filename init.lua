@@ -47,10 +47,6 @@ local function GetPolyGameEffect(id)
   return nil
 end
 
-local CessatePlayerInfo = {
-  DEFER_REPEAT = 1
-}
-
 ---You must wait a frame after running the returned clousure to de-polymorph.
 local function CessatePlayer()
   local is_perma_poly = false
@@ -66,8 +62,9 @@ local function CessatePlayer()
       EntityRemoveTag(poly_player_id, "polymorphed")
       EntityAddTag(poly_player_id, "player_unit")
     else
-      ComponentSetValue2(effect, "frames", 1)
-      return nil, CessatePlayerInfo.DEFER_REPEAT
+      ComponentSetValue2(effect, "frames", 1) -- Unpoly
+      tasks:AddDeferredTask(0, CessatePlayer)
+      return true
     end
   end
 
@@ -75,11 +72,12 @@ local function CessatePlayer()
   if not player_id then return end
   --- Compatibility with mods that remove polymorphism for player
   local no_poly_compat = EntityHasTag(player_id, "polymorphable_NOT")
+  utils:SetRunFlag(const.run_flags.no_poly_compat, no_poly_compat)
   EntityRemoveTag(player_id, "polymorphable_NOT")
   local effect = GetGameEffectLoadTo(player_id, "POLYMORPH_CESSATION", true)
 
   if not effect then
-    utils:ErrLog("Failed to get poly game effect after cessation")
+    utils:ErrLog("Failed to apply cessation")
     return
   end
 
@@ -87,24 +85,9 @@ local function CessatePlayer()
   GameAddFlagRun("msg_gods_looking")
   GameAddFlagRun("msg_gods_looking2")
 
-  return function()
-    if no_poly_compat then
-      tasks:AddDeferredTask(0, function()
-        local player_id = GetPlayer()
-        EntityAddTag(player_id, "polymorphable_NOT")
-      end)
-    end
-    if is_perma_poly then
-      tasks:AddDeferredTask(0, function()
-        local player_id = GetPlayer()
-        EntityAddTag(player_id, "polymorphed")
-        EntityRemoveTag(player_id, "player_unit")
-      end)
-    end
-    ComponentSetValue2(effect, "frames", 1)
-    GameRemoveFlagRun("msg_gods_looking")
-    GameRemoveFlagRun("msg_gods_looking2")
-  end
+  utils:SetRunFlag(const.run_flags.is_perma_poly, is_perma_poly)
+
+  return true
 end
 
 ---@param amount integer
@@ -181,6 +164,7 @@ function OnWorldInitialized()
   death_count = utils:GlobalGetOrSetTypedValue(const.globals.death_count, death_count)
   revive.level_on_revive_gain = utils:GlobalGetOrSetTypedValue(const.globals.level_on_revive_gain,
     revive.level_on_revive_gain)
+  gui.draw_respawn_gui = utils:GlobalGetOrSetTypedValue(const.globals.draw_respawn_gui, gui.draw_respawn_gui)
   ---@diagnostic enable:cast-local-type,assign-type-mismatch
 
   if meta_leveling == nil and revive.shared.respawn_system == const.RESPAWN_SYSTEM.META_LEVELING then
@@ -190,71 +174,99 @@ function OnWorldInitialized()
     revive.shared.respawn_system = const.RESPAWN_SYSTEM.UNLIMITED -- fallback
   end
 
-  gui.respawn_gui = gui:CreateRespawnGui(nil, function()
-    local player_id = GetPlayer()
-    if not player_id then
-      utils:ErrLog("failed to get player_id during respawn")
-      return
-    end
-    local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
-    if not damage_model then
-      utils:ErrLog("failed to get DamageModelComponent during respawn")
-      return
-    end
+  gui.respawn_gui = gui:CreateRespawnGui(
+    function()
+      if utils:HasRunFlag(const.run_flags.no_poly_compat) then
+        tasks:AddDeferredTask(0, function()
+          local player_id = GetPlayer()
+          EntityAddTag(player_id, "polymorphable_NOT")
+        end)
+      end
 
-    local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
-    if game_effect then
-      ComponentSetValue2(game_effect, "frames", 120)
-    end
+      local cess_entity = EntityGetWithTag("polymorphed_cessation")[1]
+      if not cess_entity then
+        utils:ErrLog("No cessated player entity found while respawning. Skipping uncessation.")
+        return
+      end
 
-    ComponentSetValue2(damage_model, "hp",
-      ComponentGetValue2(damage_model, "max_hp") * utils:GetModSetting("respawn_health") / 100)
-    GameRegenItemActionsInPlayer(player_id)
+      local effect = GameGetGameEffect(cess_entity, "POLYMORPH_CESSATION")
 
-    local player_x, player_y = EntityGetTransform(player_id)
-    EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
-    -- For clearing some area around the respawn point
-    EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y)
+      ComponentSetValue2(effect, "frames", 1)
+      GameRemoveFlagRun("msg_gods_looking")
+      GameRemoveFlagRun("msg_gods_looking2")
 
-    for _, effect in pairs(status_effects) do
-      EntityRemoveStainStatusEffect(player_id, effect.id)
-    end
-    ComponentSetValue2(damage_model, "is_on_fire", false)
-    ComponentSetValue2(damage_model, "mIsOnFire", false)
+      if utils:HasRunFlag(const.run_flags.is_perma_poly) then
+        tasks:AddDeferredTask(0, function()
+          local player_id = GetPlayer()
+          EntityAddTag(player_id, "polymorphed")
+          EntityRemoveTag(player_id, "player_unit")
+        end)
+      end
+    end, function()
+      local player_id = GetPlayer()
+      if not player_id then
+        utils:ErrLog("failed to get player_id during respawn")
+        return
+      end
+      local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
+      if not damage_model then
+        utils:ErrLog("failed to get DamageModelComponent during respawn")
+        return
+      end
 
-    local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
-    local money, money_drop = 0, 0
-    if wallet then
-      money = ComponentGetValue2(wallet, "money")
-      money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
-    end
+      local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
+      if game_effect then
+        ComponentSetValue2(game_effect, "frames", 120)
+      end
 
-    if wallet and money_drop > 0 then
-      tasks:AddDeferredTask(0, function()
-        ComponentSetValue2(wallet, "money", money - money_drop)
-        DropGold(money_drop, player_x, player_y)
-        GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
-      end)
-    end
+      ComponentSetValue2(damage_model, "hp",
+        ComponentGetValue2(damage_model, "max_hp") * utils:GetModSetting("respawn_health") / 100)
+      GameRegenItemActionsInPlayer(player_id)
 
-    if not IsReviveAvailable() then
-      RemoveArtificialDeathFlags(damage_model)
-      out_of_revives = true
-    end
-  end, function()
-    local player_id = GetPlayer()
-    if not player_id then
-      utils:ErrLog("failed to get player_id during game over")
-      return
-    end
-    local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
-    if not damage_model then
-      utils:ErrLog("failed to get DamageModelComponent during game over")
-      return
-    end
+      local player_x, player_y = EntityGetTransform(player_id)
+      EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
+      -- For clearing some area around the respawn point
+      EntityLoad("data/entities/misc/matter_eater.xml", respawn_position.x, respawn_position.y)
 
-    KillPlayer(damage_model)
-  end)
+      for _, effect in pairs(status_effects) do
+        EntityRemoveStainStatusEffect(player_id, effect.id)
+      end
+      ComponentSetValue2(damage_model, "is_on_fire", false)
+      ComponentSetValue2(damage_model, "mIsOnFire", false)
+
+      local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
+      local money, money_drop = 0, 0
+      if wallet then
+        money = ComponentGetValue2(wallet, "money")
+        money_drop = math.floor(money * utils:GetModSetting("gold_drop"))
+      end
+
+      if wallet and money_drop > 0 then
+        tasks:AddDeferredTask(0, function()
+          ComponentSetValue2(wallet, "money", money - money_drop)
+          DropGold(money_drop, player_x, player_y)
+          GamePrint(string.format(Locale("$gold_drop_msg"), money_drop))
+        end)
+      end
+
+      if not IsReviveAvailable() then
+        RemoveArtificialDeathFlags(damage_model)
+        out_of_revives = true
+      end
+    end, function()
+      local player_id = GetPlayer()
+      if not player_id then
+        utils:ErrLog("failed to get player_id during game over")
+        return
+      end
+      local damage_model = EntityGetFirstComponent(player_id, "DamageModelComponent")
+      if not damage_model then
+        utils:ErrLog("failed to get DamageModelComponent during game over")
+        return
+      end
+
+      KillPlayer(damage_model)
+    end)
 end
 
 ---@diagnostic disable-next-line: param-type-mismatch
@@ -325,16 +337,9 @@ function OnWorldPreUpdate()
 
   PlayerDied()
 
-  local remove_cessation, info = CessatePlayer()
-  if info == CessatePlayerInfo.DEFER_REPEAT then
-    tasks:AddDeferredTask(0, function()
-      local remove_cessation = CessatePlayer()
-      gui.respawn_gui.remove_cessation = remove_cessation
-    end)
-  elseif not remove_cessation then
+  if not CessatePlayer() then
     utils:ErrLog("Failed to cessate the player entity.")
   end
-  gui.respawn_gui.remove_cessation = remove_cessation
 
-  gui.draw_respawn_gui = true
+  gui:SetDrawRespawnGui(true)
 end

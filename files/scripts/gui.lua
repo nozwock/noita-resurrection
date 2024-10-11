@@ -13,6 +13,12 @@ local gui = {
   draw_respawn_gui = false
 }
 
+---@param value bool
+function gui:SetDrawRespawnGui(value)
+  self.draw_respawn_gui = value
+  utils:GlobalSetTypedValue(const.globals.draw_respawn_gui, self.draw_respawn_gui)
+end
+
 function gui:StartFrame()
   GuiStartFrame(self.gui)
 end
@@ -146,7 +152,7 @@ function gui:GuiDecoratedTitle(new_id, y, title)
   GuiLayoutEnd(self.gui)
 end
 
----@param remove_cessation? function
+---@param remove_cessation function
 ---@param on_ok function
 ---@param on_cancel function
 function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
@@ -193,11 +199,9 @@ function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
     end
 
     if GuiButton(self.gui, id, 0, 0, ok_text) then
-      if state.remove_cessation then
-        state.remove_cessation()
-      end
+      state.remove_cessation()
       tasks:AddDeferredTask(0, state.on_ok)
-      self.draw_respawn_gui = false
+      self:SetDrawRespawnGui(false)
     end
     state.hovered[id] = select(3, GuiGetPreviousWidgetInfo(self.gui))
 
@@ -208,11 +212,9 @@ function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
     end
 
     if GuiButton(self.gui, id, 14, 0, cancel_text) then
-      if state.remove_cessation then
-        state.remove_cessation()
-      end
+      state.remove_cessation()
       tasks:AddDeferredTask(0, state.on_cancel)
-      self.draw_respawn_gui = false
+      self:SetDrawRespawnGui(false)
     end
     state.hovered[id] = select(3, GuiGetPreviousWidgetInfo(self.gui))
 

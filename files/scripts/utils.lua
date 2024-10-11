@@ -61,6 +61,27 @@ function utils:rpairs(t)
   )
 end
 
+---@param flag string
+function utils:_ResolveFlag(flag)
+  return const.MOD_ID .. "." .. flag
+end
+
+---@param flag string
+function utils:HasRunFlag(flag)
+  return GameHasFlagRun(self:_ResolveFlag(flag))
+end
+
+---@param flag string
+---@param is_on boolean
+function utils:SetRunFlag(flag, is_on)
+  flag = self:_ResolveFlag(flag)
+  if is_on then
+    GameAddFlagRun(flag)
+  else
+    GameRemoveFlagRun(flag)
+  end
+end
+
 utils.mod_settings_cache = {}
 
 ---@param id string
