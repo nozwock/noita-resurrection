@@ -11,6 +11,7 @@ local gui = dofile_once("mods/resurrection/files/scripts/gui.lua") ---@type gui_
 local meta_leveling = dofile_once("mods/resurrection/files/scripts/meta_leveling.lua") ---@type meta_leveling
 
 
+local INIT_FLAG = false
 local ONE_HP = 0.04
 local respawn_position = {
   x = tonumber(MagicNumbersGetValue("DESIGN_PLAYER_START_POS_X")),
@@ -267,17 +268,21 @@ function OnWorldInitialized()
       KillPlayer(damage_model)
     end)
 
+  assert(gui.respawn_gui)
+
   ---@diagnostic disable-next-line: assign-type-mismatch
   gui.respawn_gui.draw_gui = utils:GlobalGetOrSetTypedValue(const.globals.draw_respawn_gui,
     gui.respawn_gui.draw_gui)
 
-  assert(gui.respawn_gui)
+  INIT_FLAG = true
 end
 
 ---@diagnostic disable-next-line: param-type-mismatch
 local hold_respawn_point_handler = input:CreateHoldKeyDownHandler(utils:GetModSetting("respawn_point"))
 
 function OnWorldPreUpdate()
+  if not INIT_FLAG then return end
+
   gui:StartFrame()
 
   tasks:ProcessDeferredTasks()
