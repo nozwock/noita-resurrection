@@ -350,6 +350,10 @@ end
 -- This function is called to ensure the correct setting values are visible to the game. your mod's settings don't work if you don't have a function like this defined in settings.lua.
 function ModSettingsUpdate(init_scope)
   local old_version = mod_settings_get_version(MOD_ID) -- This can be used to migrate some settings between mod versions.
+
+  respawn_point_keybind_reset()
+  mod_settings_update(MOD_ID, mod_settings, init_scope)
+
   if old_version <= 1 then
     _FixIntegerSetting("limited_revives")
     _FixIntegerSetting("ml_starting_revives")
@@ -358,9 +362,6 @@ function ModSettingsUpdate(init_scope)
   if old_version <= 2 then
     ModSettingSetNextValue(utils:ResolveModSettingId("respawn_health"), 50, false)
   end
-
-  respawn_point_keybind_reset()
-  mod_settings_update(MOD_ID, mod_settings, init_scope)
 end
 
 -- This function should return the number of visible setting UI elements.
