@@ -214,9 +214,9 @@ function OnWorldInitialized()
         return
       end
 
-      local game_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
-      if game_effect then
-        ComponentSetValue2(game_effect, "frames", 120)
+      local blindness_effect = GetGameEffectLoadTo(player_id, "BLINDNESS", true)
+      if blindness_effect then
+        ComponentSetValue2(blindness_effect, "frames", 120)
       end
 
       ComponentSetValue2(damage_model, "hp",
