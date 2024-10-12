@@ -351,6 +351,8 @@ end
 function ModSettingsUpdate(init_scope)
   local old_version = mod_settings_get_version(MOD_ID) -- This can be used to migrate some settings between mod versions.
 
+  -- Don't do these old_version compats before mod_settings_update. since if it breaks, it'll prevent mod_settings_update from executing.
+
   respawn_point_keybind_reset()
   mod_settings_update(MOD_ID, mod_settings, init_scope)
 
