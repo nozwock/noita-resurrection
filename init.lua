@@ -48,7 +48,7 @@ local function GetPolyGameEffect(id)
   return nil
 end
 
----You must wait a frame after running the returned clousure to de-polymorph.
+--- The bug where there is an additional dark background overlay on reload after a 'Save & Exit' on the respawn screen is a vanilla bug relating to cessation.
 local function CessatePlayer()
   local is_perma_poly = false
   local poly_player_id = GetPolyPlayer()
