@@ -159,7 +159,7 @@ end
 
 function OnWorldInitialized()
   ---@diagnostic disable:cast-local-type,assign-type-mismatch
-  -- It might be fine to allow for changing respawn system on world load, and not just per run
+  -- todo? It might be fine to allow changing respawn system on world load, and not just per run.
   revive.shared:Init()
   respawn_position = utils:GlobalGetTypedValue(const.globals.respawn_position, respawn_position) ---@type table
   death_count = utils:GlobalGetOrSetTypedValue(const.globals.death_count, death_count)

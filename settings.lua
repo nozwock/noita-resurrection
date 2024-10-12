@@ -108,7 +108,7 @@ local function CreateGuiSettingKeybind()
 end
 
 ---Both `enum_values` and `info` must have the same size and keys of `info` should be the values in `enum_values`.
----The values in the `info` table must have two items, the option name and tooltipo.
+---The values in the `info` table must have two items, the option name and its tooltip.
 ---
 ---**NOTE:** Order of `enum_values` must be consistent, so don't derive it using `pairs` over a `table`.
 ---@param enum_values integer[]|string[]
@@ -338,7 +338,7 @@ mod_settings = {
   },
 }
 
----Only pass in settings with number widget.
+---Only pass-in settings with number widget.
 ---@param id string
 local function _FixIntegerSetting(id)
   id = utils:ResolveModSettingId(id)

@@ -160,7 +160,7 @@ function gui:CreateRespawnGui(remove_cessation, on_ok, on_cancel)
     hover_prefix = ">"
   }
 
-  ---@param value bool
+  ---@param value boolean
   function state:SetDrawGui(value)
     self.draw_gui = value
     utils:GlobalSetTypedValue(const.globals.draw_respawn_gui, self.draw_gui)
