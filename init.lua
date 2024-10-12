@@ -233,6 +233,12 @@ function OnWorldInitialized()
       end
       ComponentSetValue2(damage_model, "is_on_fire", false)
       ComponentSetValue2(damage_model, "mIsOnFire", false)
+      ComponentSetValue2(damage_model, "mFireProbability", 0)
+      ComponentSetValue2(damage_model, "mFireFramesLeft", 0)
+      local fire_effect = GameGetGameEffect(player_id, "ON_FIRE")
+      if fire_effect then
+        ComponentSetValue2(fire_effect, "frames", 1)
+      end
 
       local wallet = EntityGetFirstComponent(player_id, "WalletComponent")
       local money, money_drop = 0, 0
