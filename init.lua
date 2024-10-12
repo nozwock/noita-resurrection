@@ -24,14 +24,17 @@ local final_kill_player_flag = false
 local out_of_revives = false
 
 
+---@return entity_id|nil
 local function GetPlayer()
   return EntityGetWithTag("player_unit")[1] or EntityGetWithTag("polymorphed_player")[1]
 end
 
+---@return entity_id|nil
 local function GetNonPolyPlayer()
   return EntityGetWithTag("player_unit")[1]
 end
 
+---@return entity_id|nil
 local function GetPolyPlayer()
   return EntityGetWithTag("polymorphed_player")[1]
 end
@@ -236,7 +239,7 @@ function OnWorldInitialized()
       ComponentSetValue2(damage_model, "mFireProbability", 0)
       ComponentSetValue2(damage_model, "mFireFramesLeft", 0)
       local fire_effect = GameGetGameEffect(player_id, "ON_FIRE")
-      if fire_effect then
+      if fire_effect ~= 0 then
         ComponentSetValue2(fire_effect, "frames", 1)
       end
 
