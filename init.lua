@@ -224,6 +224,7 @@ function OnWorldInitialized()
 
       local max_hp = ComponentGetValue2(damage_model, "max_hp")
       if not GetPolyPlayer() then -- Don't do anything if the player is perma poly
+        local old_max_hp = max_hp -- Prevent from ending up increasing HP in some cases because of max_hp_minima
         local max_hp_reduction = utils:GetModSetting("max_hp_reduction")
         local max_hp_multiplier = utils:GetModSetting("max_hp_multiplier")
         if death_count > 1 then
@@ -233,7 +234,8 @@ function OnWorldInitialized()
         end
         max_hp = max_hp - utils:GetModSetting("max_hp_reduction_static") * ONE_HP - max_hp * max_hp_reduction
 
-        ComponentSetValue2(damage_model, "max_hp", math.max(max_hp, utils:GetModSetting("max_hp_minima") * ONE_HP))
+        ComponentSetValue2(damage_model, "max_hp",
+          math.min(old_max_hp, math.max(max_hp, utils:GetModSetting("max_hp_minima") * ONE_HP)))
       end
       ComponentSetValue2(damage_model, "hp",
         max_hp * utils:GetModSetting("respawn_health") / 100)
