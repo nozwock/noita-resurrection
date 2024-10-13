@@ -227,7 +227,9 @@ function OnWorldInitialized()
         local max_hp_reduction = utils:GetModSetting("max_hp_reduction")
         local max_hp_multiplier = utils:GetModSetting("max_hp_multiplier")
         if death_count > 1 then
-          max_hp_reduction = max_hp_reduction + max_hp_reduction * max_hp_multiplier * (death_count - 1)
+          for i = 2, death_count do
+            max_hp_reduction = max_hp_reduction + max_hp_reduction * max_hp_multiplier
+          end
         end
         max_hp = max_hp - utils:GetModSetting("max_hp_reduction_static") * ONE_HP - max_hp * max_hp_reduction
 
