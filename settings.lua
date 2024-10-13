@@ -152,33 +152,99 @@ local function CreateGuiSettingEnum(enum_values, info)
   end
 end
 
+---@param number number
+---@param decimal? integer
+local function TruncateNumber(number, decimal)
+  if decimal <= 0 then
+    decimal = nil
+  end
+  local pow = 10 ^ (decimal or 0)
+  return math.floor(number * pow) / pow
+end
+
+---@param number number
+local function FloorSliderValueInteger(number)
+  return math.floor(number + 0.5) -- Because the slider can return ranging from 1.8 to 2.3 while showing 2, just as an example
+end
+
+---@param number number
+---@param decimal? integer
+local function FloorSliderValueFloat(number, decimal)
+  if decimal <= 0 or not decimal then
+    decimal = 0
+  end
+  local pow = 10 ^ (decimal + 1)
+  return TruncateNumber(number + 5 / pow, decimal)
+end
+
 ---@param mod_id string
 ---@param gui gui
 ---@param in_main_menu boolean
 ---@param im_id integer
 ---@param setting mod_setting_number
-local function mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
+---@param value_formatting string
+---@param value_display_multiplier? number
+---@param value_map? fun(value:number):number
+local function ModSettingSlider(mod_id, gui, in_main_menu, im_id, setting, value_formatting, value_display_multiplier,
+                                value_map)
+  local empty = "data/ui_gfx/empty.png"
+  local setting_id = mod_setting_get_id(mod_id, setting)
   local value = ModSettingGetNextValue(mod_setting_get_id(mod_id, setting))
   if type(value) ~= "number" then value = setting.value_default or 0.0 end
 
   GuiLayoutBeginHorizontal(gui, mod_setting_group_x_offset, 0, true)
+
   if setting.value_min == nil or setting.value_max == nil or setting.value_default == nil then
     GuiText(gui, 0, 0, setting.ui_name .. " - not all required values are defined in setting definition")
     return
   end
 
+  GuiText(gui, 0, 0, "")
+  local x_start, y_start = select(4, GuiGetPreviousWidgetInfo(gui))
+
+  GuiIdPushString(gui, MOD_ID .. setting_id)
+
   local value_new = GuiSlider(gui, im_id, 0, 0, setting.ui_name, value, setting.value_min,
-    setting.value_max, setting.value_default, setting.value_display_multiplier or 1,
-    setting.value_display_formatting or "", 64)
-  value_new = math.floor(value_new + 0.5) -- Because the slider can return ranging from 1.8 to 2.3 while showing 2, just as an example
+    setting.value_max, setting.value_default, setting.value_slider_multiplier or 1, -- This affects the steps for slider aswell, so it's not just a visual thing.
+    " ", 64)
+  if value_map then
+    value_new = value_map(value_new)
+  end
+
+  local x_end, _, w = select(4, GuiGetPreviousWidgetInfo(gui))
+  local display_text = string.format(value_formatting, value_new * (value_display_multiplier or 1))
+  local tw = GuiGetTextDimensions(gui, display_text)
+  GuiImageNinePiece(gui, im_id + 1, x_start, y_start, x_end - x_start + w + tw - 2, 8, 0, empty, empty)
+  local hovered = select(3, GuiGetPreviousWidgetInfo(gui))
+
+  mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
+
+  if hovered then
+    GuiColorSetForNextWidget(gui, 0.8, 0.8, 0.8, 1)
+    GuiText(gui, 0, 0, display_text)
+  end
+
+  GuiIdPop(gui)
+  GuiLayoutEnd(gui)
 
   if value ~= value_new then
     ModSettingSetNextValue(mod_setting_get_id(mod_id, setting), value_new, false)
     mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, value, value_new)
   end
+end
 
-  GuiLayoutEnd(gui)
-  mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
+local function mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
+  ModSettingSlider(mod_id, gui, in_main_menu, im_id, setting, setting.value_display_formatting or "%d",
+    setting.value_display_multiplier, function(value)
+      return FloorSliderValueInteger(value)
+    end)
+end
+
+local function mod_setting_float(mod_id, gui, in_main_menu, im_id, setting)
+  ModSettingSlider(mod_id, gui, in_main_menu, im_id, setting, setting.value_display_formatting or "%.1f",
+    setting.value_display_multiplier, function(value)
+      return FloorSliderValueFloat(value, setting.value_precision)
+    end)
 end
 
 
@@ -211,7 +277,7 @@ mod_settings = {
         value_default = 0,
         value_min = 0,
         value_max = 200,
-        value_display_formatting = " x = $0",
+        value_display_formatting = " x = %d",
         ui_fn = mod_setting_integer,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
@@ -263,7 +329,7 @@ mod_settings = {
         value_default = 50,
         value_min = 1,
         value_max = 100,
-        value_display_formatting = " $0%",
+        value_display_formatting = " %d%%",
         ui_fn = mod_setting_integer,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
