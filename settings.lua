@@ -340,8 +340,10 @@ mod_settings = {
         value_default = 0.2,
         value_min = 0,
         value_max = 1,
+        value_precision = 2,
         value_display_multiplier = 100,
-        value_display_formatting = " $0%",
+        value_display_formatting = " %d%%",
+        ui_fn = mod_setting_float,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
@@ -398,8 +400,10 @@ mod_settings = {
                 value_default = 0.6,
                 value_min = 0,
                 value_max = 1,
+                value_precision = 2,
                 value_display_multiplier = 100,
-                value_display_formatting = " $0%",
+                value_display_formatting = " %d%%",
+                ui_fn = mod_setting_float,
                 scope = MOD_SETTING_SCOPE_RUNTIME,
               },
             }
@@ -429,7 +433,8 @@ mod_settings = {
         value_min = 30,
         value_max = 300,
         value_display_multiplier = 1000 / 60,
-        value_display_formatting = " $0 ms",
+        value_display_formatting = " %d ms",
+        ui_fn = mod_setting_integer,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
     }
@@ -441,7 +446,7 @@ mod_settings = {
 local function _FixIntegerSetting(id)
   id = utils:ResolveModSettingId(id)
   local v = ModSettingGetNextValue(id)
-  v = math.floor(v + 0.5)
+  v = FloorSliderValueInteger(v)
   ModSettingSetNextValue(id, v, false)
 end
 
