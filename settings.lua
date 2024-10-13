@@ -455,7 +455,7 @@ mod_settings = {
               {
                 id = "ml_reward_revive_chance",
                 ui_name = "Revive Reward Chance",
-                value_default = 0.6,
+                value_default = 0.3,
                 value_min = 0,
                 value_max = 1,
                 value_precision = 2,

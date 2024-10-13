@@ -33,7 +33,7 @@ local rewards = {
     ui_icon = "mods/resurrection/files/gfx/rewards/plus_with_angel_wings.png",
     sound = MLP.const.sounds.refresh,
     border_color = ML.rewards_deck.borders.uncommon,
-    probability = CreateProbabilityFnFromSettings("ml_reward_revive_chance", 0.6),
+    probability = CreateProbabilityFnFromSettings("ml_reward_revive_chance", 0.3),
     custom_check = ToAddOnSetting,
     fn = function()
       shared_revive:AddRevive(1)
