@@ -152,6 +152,11 @@ local function CreateGuiSettingEnum(enum_values, info)
   end
 end
 
+---@param mod_id string
+---@param gui gui
+---@param in_main_menu boolean
+---@param im_id integer
+---@param setting mod_setting_number
 local function mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
   local value = ModSettingGetNextValue(mod_setting_get_id(mod_id, setting))
   if type(value) ~= "number" then value = setting.value_default or 0.0 end

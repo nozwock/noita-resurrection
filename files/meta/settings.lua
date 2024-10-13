@@ -51,7 +51,8 @@ mod_setting_group_x_offset = 0 --increases automatically
 ---@field value_min number
 ---@field value_max number
 ---@field value_display_multiplier number
----@field format string
+---@field value_display_formatting string
+--@field format string
 
 ---@class (exact) mod_setting_boolean:mod_setting
 ---@field value_default boolean
