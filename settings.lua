@@ -184,79 +184,33 @@ local respawn_point_keybind, respawn_point_keybind_reset = CreateGuiSettingKeybi
 ---@type mod_settings_global
 mod_settings = {
   {
-    not_setting = true,
-    ui_name = "Changes to respawn system or amount of revives require a new-game to take effect.",
-    ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
-      GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
-      mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
-    end,
-    scope = MOD_SETTING_SCOPE_RUNTIME,
+    category_id = "ui",
+    ui_name = "UI",
+    foldable = true,
+    _folded = true,
+    settings = {
+      {
+        id = "stat_hud_offset",
+        ui_name = "Stat HUD Offset",
+        ui_description = "Amount of pixels to offset HUD to the left.",
+        value_default = 0,
+        value_min = 0,
+        value_max = 200,
+        value_display_formatting = " x = $0",
+        ui_fn = mod_setting_integer,
+        scope = MOD_SETTING_SCOPE_RUNTIME
+      },
+    }
   },
   {
-    id = "respawn_system",
-    ui_name = "Respawn System",
-    value_default = RESPAWN_SYSTEM.UNLIMITED,
-    ui_fn = CreateGuiSettingEnum({ RESPAWN_SYSTEM.UNLIMITED, RESPAWN_SYSTEM.LIMITED, RESPAWN_SYSTEM.META_LEVELING },
-      RESPAWN_SYSTEM_INFO),
-    scope = MOD_SETTING_SCOPE_RUNTIME
-  },
-  {
-    id = "limited_revives",
-    ui_name = "Limited Revives",
-    ui_description = "Maximum amount of revives to have.",
-    value_default = 3,
-    value_min = 1,
-    value_max = 50,
-    ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
-      -- Values from `ModSettingGet` are only updated when in-game.
-      if ModSettingGetNextValue(utils:ResolveModSettingId("respawn_system")) == RESPAWN_SYSTEM.LIMITED then
-        mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
-      end
-    end,
-    scope = MOD_SETTING_SCOPE_RUNTIME
-  },
-  {
-    id = "respawn_health",
-    ui_name = "Respawn Health",
-    ui_description = "Fraction of health to respawn with.",
-    value_default = 50,
-    value_min = 1,
-    value_max = 100,
-    value_display_formatting = " $0%",
-    ui_fn = mod_setting_integer,
-    scope = MOD_SETTING_SCOPE_RUNTIME
-  },
-  {
-    id = "gold_drop",
-    ui_name = "Gold Drop",
-    ui_description = "Fraction of gold to be dropped on death.",
-    value_default = 0.2,
-    value_min = 0,
-    value_max = 1,
-    value_display_multiplier = 100,
-    value_display_formatting = " $0%",
-    scope = MOD_SETTING_SCOPE_RUNTIME
-  },
-  {
-    id = "stat_hud_offset",
-    ui_name = "Stat HUD Offset",
-    ui_description = "Amount of pixels to offset HUD to the left.",
-    value_default = 0,
-    value_min = 0,
-    value_max = 200,
-    value_display_formatting = " x = $0",
-    ui_fn = mod_setting_integer,
-    scope = MOD_SETTING_SCOPE_RUNTIME
-  },
-  {
-    category_id = "meta_leveling_integration",
-    ui_name = "Meta Leveling Integration",
+    category_id = "gameplay",
+    ui_name = "Gameplay",
     foldable = true,
     _folded = true,
     settings = {
       {
         not_setting = true,
-        ui_name = "These settings are specific to the Meta Leveling respawn system.",
+        ui_name = "Changes to respawn system or amount of revives require a new-game.",
         ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
           GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
           mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
@@ -264,47 +218,110 @@ mod_settings = {
         scope = MOD_SETTING_SCOPE_RUNTIME,
       },
       {
-        id = "ml_starting_revives",
-        ui_name = "Starting Revives",
-        ui_description = "Amount of revives you start with.",
-        value_default = 1,
-        value_min = 0,
-        value_max = 10,
+        id = "respawn_system",
+        ui_name = "Respawn System",
+        value_default = RESPAWN_SYSTEM.UNLIMITED,
+        ui_fn = CreateGuiSettingEnum({ RESPAWN_SYSTEM.UNLIMITED, RESPAWN_SYSTEM.LIMITED, RESPAWN_SYSTEM.META_LEVELING },
+          RESPAWN_SYSTEM_INFO),
+        scope = MOD_SETTING_SCOPE_RUNTIME
+      },
+      {
+        id = "limited_revives",
+        ui_name = "Limited Revives",
+        ui_description = "Maximum amount of revives to have.",
+        value_default = 3,
+        value_min = 1,
+        value_max = 50,
+        ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+          -- Values from `ModSettingGet` are only updated when in-game.
+          -- Also, we're not using setting.hidden as that prevents ui_fn from executing all together when turned on.
+          if ModSettingGetNextValue(utils:ResolveModSettingId("respawn_system")) == RESPAWN_SYSTEM.LIMITED then
+            mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
+          end
+        end,
+        scope = MOD_SETTING_SCOPE_RUNTIME
+      },
+      {
+        id = "respawn_health",
+        ui_name = "Respawn Health",
+        ui_description = "Fraction of health to respawn with.",
+        value_default = 50,
+        value_min = 1,
+        value_max = 100,
+        value_display_formatting = " $0%",
         ui_fn = mod_setting_integer,
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
-        id = "ml_revive_levels",
-        ui_name = "Levels For Revive",
-        ui_description = "Amount of level-ups required to gain a revive.",
-        value_default = 5,
-        value_min = 1,
-        value_max = 50,
-        ui_fn = mod_setting_integer,
-        scope = MOD_SETTING_SCOPE_RUNTIME,
+        id = "gold_drop",
+        ui_name = "Gold Drop",
+        ui_description = "Fraction of gold to be dropped on death.",
+        value_default = 0.2,
+        value_min = 0,
+        value_max = 1,
+        value_display_multiplier = 100,
+        value_display_formatting = " $0%",
+        scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
-        category_id = "ml_rewards_group",
-        ui_name = "Rewards",
+        category_id = "meta_leveling_integration",
+        ui_name = "Meta Leveling Integration",
         foldable = true,
-        _folded = false,
+        _folded = true,
         settings = {
           {
-            id = "ml_rewards",
-            ui_name = "New Rewards",
-            ui_description = "Toggle custom rewards for Meta Leveling.",
-            value_default = true,
+            not_setting = true,
+            ui_name = "These settings are specific to the Meta Leveling respawn system.",
+            ui_fn = function(mod_id, gui, in_main_menu, im_id, setting)
+              GuiColorSetForNextWidget(gui, 0.5, 0.5, 0.5, 1)
+              mod_setting_title(mod_id, gui, in_main_menu, im_id, setting)
+            end,
             scope = MOD_SETTING_SCOPE_RUNTIME,
           },
           {
-            id = "ml_reward_revive_chance",
-            ui_name = "Revive Reward Chance",
-            value_default = 0.6,
+            id = "ml_starting_revives",
+            ui_name = "Starting Revives",
+            ui_description = "Amount of revives you start with.",
+            value_default = 1,
             value_min = 0,
-            value_max = 1,
-            value_display_multiplier = 100,
-            value_display_formatting = " $0%",
+            value_max = 10,
+            ui_fn = mod_setting_integer,
+            scope = MOD_SETTING_SCOPE_RUNTIME
+          },
+          {
+            id = "ml_revive_levels",
+            ui_name = "Levels For Revive",
+            ui_description = "Amount of level-ups required to gain a revive.",
+            value_default = 5,
+            value_min = 1,
+            value_max = 50,
+            ui_fn = mod_setting_integer,
             scope = MOD_SETTING_SCOPE_RUNTIME,
+          },
+          {
+            category_id = "ml_rewards_group",
+            ui_name = "Rewards",
+            foldable = true,
+            _folded = false,
+            settings = {
+              {
+                id = "ml_rewards",
+                ui_name = "New Rewards",
+                ui_description = "Toggle custom rewards for Meta Leveling.",
+                value_default = true,
+                scope = MOD_SETTING_SCOPE_RUNTIME,
+              },
+              {
+                id = "ml_reward_revive_chance",
+                ui_name = "Revive Reward Chance",
+                value_default = 0.6,
+                value_min = 0,
+                value_max = 1,
+                value_display_multiplier = 100,
+                value_display_formatting = " $0%",
+                scope = MOD_SETTING_SCOPE_RUNTIME,
+              },
+            }
           },
         }
       },
