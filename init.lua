@@ -222,8 +222,19 @@ function OnWorldInitialized()
         ComponentSetValue2(blindness_effect, "frames", 120)
       end
 
+      local max_hp = ComponentGetValue2(damage_model, "max_hp")
+      if not GetPolyPlayer() then -- Don't do anything if the player is perma poly
+        local max_hp_reduction = utils:GetModSetting("max_hp_reduction")
+        local max_hp_multiplier = utils:GetModSetting("max_hp_multiplier")
+        if death_count > 1 then
+          max_hp_reduction = max_hp_reduction + max_hp_reduction * max_hp_multiplier * (death_count - 1)
+        end
+        max_hp = max_hp - utils:GetModSetting("max_hp_reduction_static") * ONE_HP - max_hp * max_hp_reduction
+
+        ComponentSetValue2(damage_model, "max_hp", math.max(max_hp, utils:GetModSetting("max_hp_minima") * ONE_HP))
+      end
       ComponentSetValue2(damage_model, "hp",
-        ComponentGetValue2(damage_model, "max_hp") * utils:GetModSetting("respawn_health") / 100)
+        max_hp * utils:GetModSetting("respawn_health") / 100)
       GameRegenItemActionsInPlayer(player_id)
 
       local player_x, player_y = EntityGetTransform(player_id)

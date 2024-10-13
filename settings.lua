@@ -347,6 +347,64 @@ mod_settings = {
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
+        category_id = "max_hp_reduction",
+        ui_name = "Max HP Reduction",
+        foldable = true,
+        _folded = true,
+        ui_description =
+        "Roughly how this'll work:\nPercentage = Percentage + Percentage X Multiplier\nMaxHP = MaxHp - Static - MaxHP X Percentage / 100",
+        settings = {
+          {
+            id = "max_hp_minima",
+            ui_name = "Max HP Minima",
+            ui_description = "Max HP can't be lowered than this value.",
+            value_default = 20,
+            value_min = 1,
+            value_max = 100,
+            value_display_formatting = " %d HP",
+            ui_fn = mod_setting_integer,
+            scope = MOD_SETTING_SCOPE_RUNTIME
+          },
+          {
+            id = "max_hp_reduction_static",
+            ui_name = "Reduction Static",
+            ui_description = "Amount of static value to reduce max HP by on respawn.",
+            value_default = 0,
+            value_min = 0,
+            value_max = 100,
+            value_display_formatting = " %d HP",
+            ui_fn = mod_setting_integer,
+            scope = MOD_SETTING_SCOPE_RUNTIME
+          },
+          {
+            id = "max_hp_reduction",
+            ui_name = "Reduction Percentage",
+            ui_description = "Fraction of max HP to reduce by on respawn.",
+            value_default = 0,
+            value_min = 0,
+            value_max = 1,
+            value_precision = 2,
+            value_display_multiplier = 100,
+            value_display_formatting = " %d%%",
+            ui_fn = mod_setting_float,
+            scope = MOD_SETTING_SCOPE_RUNTIME
+          },
+          {
+            id = "max_hp_multiplier",
+            ui_name = "Reduction Additive Multiplier",
+            ui_description =
+            "Apply this multiplier additively to Reduction Percentage\non every respawn after the first. This is non-linear.",
+            value_default = 0.2,
+            value_min = 0,
+            value_max = 10,
+            value_precision = 1,
+            value_display_formatting = " %.1fx",
+            ui_fn = mod_setting_float,
+            scope = MOD_SETTING_SCOPE_RUNTIME
+          },
+        }
+      },
+      {
         category_id = "meta_leveling_integration",
         ui_name = "Meta Leveling Integration",
         foldable = true,
