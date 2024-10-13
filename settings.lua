@@ -154,15 +154,25 @@ end
 
 local function mod_setting_integer(mod_id, gui, in_main_menu, im_id, setting)
   local value = ModSettingGetNextValue(mod_setting_get_id(mod_id, setting))
-  local value_new = GuiSlider(gui, im_id, mod_setting_group_x_offset, 0, setting.ui_name, value, setting.value_min,
+  if type(value) ~= "number" then value = setting.value_default or 0.0 end
+
+  GuiLayoutBeginHorizontal(gui, mod_setting_group_x_offset, 0, true)
+  if setting.value_min == nil or setting.value_max == nil or setting.value_default == nil then
+    GuiText(gui, 0, 0, setting.ui_name .. " - not all required values are defined in setting definition")
+    return
+  end
+
+  local value_new = GuiSlider(gui, im_id, 0, 0, setting.ui_name, value, setting.value_min,
     setting.value_max, setting.value_default, setting.value_display_multiplier or 1,
     setting.value_display_formatting or "", 64)
   value_new = math.floor(value_new + 0.5) -- Because the slider can return ranging from 1.8 to 2.3 while showing 2, just as an example
+
   if value ~= value_new then
     ModSettingSetNextValue(mod_setting_get_id(mod_id, setting), value_new, false)
     mod_setting_handle_change_callback(mod_id, gui, in_main_menu, setting, value, value_new)
   end
 
+  GuiLayoutEnd(gui)
   mod_setting_tooltip(mod_id, gui, in_main_menu, setting)
 end
 
