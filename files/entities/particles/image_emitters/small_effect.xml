@@ -4,12 +4,6 @@
 		lifetime="260">
 	</LifetimeComponent>
 
-	<AudioComponent
-		file="data/audio/Desktop/event_cues.bank"
-		event_root="event_cues/heart_fullhp"
-		play_only_if_visible="1">
-	</AudioComponent>
-
 	<ParticleEmitterComponent
 		emitted_material_name="spark_yellow"
 		gravity.y="0.0"

@@ -273,6 +273,15 @@ function OnWorldInitialized()
         end)
       end
 
+      local effect = EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml",
+        respawn_position.x, respawn_position.y)
+      EntityAddComponent2(effect, "AudioComponent",
+        { file = "data/audio/Desktop/event_cues.bank", event_root = "event_cues/rune" })
+      local particle = EntityGetFirstComponent(effect, "ParticleEmitterComponent")
+      if particle then
+        ComponentSetValue2(particle, "emitted_material_name", "spark_red")
+      end
+
       if not IsReviveAvailable() then
         RemoveArtificialDeathFlags(damage_model)
         out_of_revives = true
@@ -323,7 +332,10 @@ function OnWorldPreUpdate()
 
       utils:GlobalSetTypedValue(const.globals.respawn_position, respawn_position)
 
-      EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml", x, y)
+
+      local effect = EntityLoad("mods/resurrection/files/entities/particles/image_emitters/small_effect.xml", x, y)
+      EntityAddComponent2(effect, "AudioComponent",
+        { file = "data/audio/Desktop/event_cues.bank", event_root = "event_cues/heart_fullhp" })
       GamePrint(Locale("$respawn_set_msg"))
     end
   end
@@ -375,5 +387,10 @@ function OnWorldPreUpdate()
     utils:ErrLog("Failed to cessate the player entity.")
   end
 
+  tasks:AddDeferredTask(15, function()
+    GamePlaySound("event_cues", "event_cues/heartbeat/create", 0, 0)
+  end)
+
+  -- todo? Some fissure gfx with trailing lights
   gui.respawn_gui:SetDrawGui(true)
 end
