@@ -30,8 +30,7 @@ end
 
 ---@param amount integer
 function revive:AddRevive(amount)
-  self._count = self:GetReviveCount() + amount
-  utils:GlobalSetTypedValue(const.globals.revive_count, self._count)
+  self:_SetReviveCount(self:GetReviveCount() + amount)
 end
 
 ---@return integer|nil
