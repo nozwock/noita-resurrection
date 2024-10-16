@@ -2,6 +2,9 @@
 local const = dofile_once("mods/resurrection/files/scripts/const.lua") ---@type const
 local utils = dofile_once("mods/resurrection/files/scripts/utils.lua") ---@type utils
 local shared_revive = dofile_once("mods/resurrection/files/scripts/shared/revive.lua") ---@type shared_revive
+local rewards_deck = dofile_once("mods/meta_leveling/files/scripts/classes/private/rewards_deck.lua")
+local ml_const = dofile_once("mods/meta_leveling/files/scripts/classes/public/const.lua")
+
 -- dofile_once("mods/meta_leveling/files/scripts/classes/private/rewards.lua")
 
 local function ToAddOnSetting()
@@ -31,8 +34,8 @@ local rewards = {
     ui_name = "$resurrection_revive_reward",
     description = "$resurrection_revive_reward_desc",
     ui_icon = "mods/resurrection/files/gfx/rewards/plus_with_angel_wings.png",
-    sound = MLP.const.sounds.refresh,
-    border_color = ML.rewards_deck.borders.uncommon,
+    sound = ml_const.sounds.shop_item,
+    border_color = rewards_deck.borders.uncommon,
     probability = CreateProbabilityFnFromSettings("ml_reward_revive_chance", 0.3),
     custom_check = ToAddOnSetting,
     fn = function()
@@ -43,4 +46,4 @@ local rewards = {
 
 shared_revive:Init()
 
-ML.rewards_deck:add_rewards(rewards)
+rewards_deck:add_rewards(rewards)
