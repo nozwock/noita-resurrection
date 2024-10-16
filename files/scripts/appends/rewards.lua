@@ -35,7 +35,6 @@ local rewards = {
     description = "$resurrection_revive_reward_desc",
     ui_icon = "mods/resurrection/files/gfx/rewards/plus_with_angel_wings.png",
     sound = ml_const.sounds.shop_item,
-    border_color = rewards_deck.borders.uncommon,
     probability = CreateProbabilityFnFromSettings("ml_reward_revive_chance", 0.3),
     custom_check = ToAddOnSetting,
     fn = function()
