@@ -2,7 +2,7 @@ You'll always have a choice between life and death.
 
 ![](https://i.imgur.com/aEdbVQv.gif)
 
-Yet another mod with a respawn system, with the difference being that you get to choose whether to respawn or not upon each death. You can also reset your respawn point by holding the 'Set Respawn Point' key for a second, which is 'T' by default and can be configured in the mod settings. Additionally, there are options to respawn with lower health and to drop some fraction of gold on death, all of which can be configured.
+Yet another mod with a respawn system, with the difference being that you get to choose whether to respawn or not upon each death. You can also reset your respawn point by holding the 'Set Respawn Point' key for a second, which is 'T' by default and can be configured in the mod settings. Additionally, there are options to respawn with lower health, to drop some fraction of gold on death, and more, all of which can be configured.
 
 ### Installation
 
@@ -30,10 +30,12 @@ The mod also displays stats for death count and the number of revives you have l
 
 A reward has also been added to ML that grants you a revive, and it's probability of appearing can be adjusted in the settings.
 
-![](https://i.imgur.com/uU3Xqpq.png)
+![](https://i.imgur.com/LoWJ0Qs.png)
 
-
-This update introduced a lot of changes. I've tested it sufficiently, but if you experience any bugs, do report them.
+### Note
+- Using 'Save & Exit' while on the respawn screen will no longer break the run, but you should still avoid it, as the mouse input will be blocked if you have permanent polymorph, unless you reload the game after another 'Save & Exit'. This issue is caused by a vanilla bug.
+- In case it wasn't obvious, don't use this with other respawn mods, as they are not compatible.
+- Not compatible with any multiplayer mods for now.
 
 ### Credits
 
