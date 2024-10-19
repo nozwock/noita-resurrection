@@ -240,6 +240,10 @@ function OnWorldInitialized()
       ComponentSetValue2(damage_model, "hp",
         max_hp * utils:GetModSetting("respawn_health") / 100)
       GameRegenItemActionsInPlayer(player_id)
+      -- Compat
+      if ModIsEnabled("AdvancedSpellInventory") then
+        GlobalsSetValue("AdvancedSpellInventory_spells_refreshed", "1")
+      end
 
       local player_x, player_y = EntityGetTransform(player_id)
       EntitySetTransform(player_id, respawn_position.x, respawn_position.y)
