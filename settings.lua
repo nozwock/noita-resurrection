@@ -139,7 +139,7 @@ local function CreateGuiSettingEnum(enum_values, info)
       value = setting.value_default
       GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", 0, 0)
     end
-    if hovered then
+    if hovered and is_visible_string(info[prev_value][2]) then
       GuiTooltip(gui, info[prev_value][2], "")
     end
 
