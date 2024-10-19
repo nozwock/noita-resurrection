@@ -107,13 +107,18 @@ local function CreateGuiSettingKeybind()
   end
 end
 
----Both `enum_values` and `info` must have the same size and keys of `info` should be the values in `enum_values`.
----The values in the `info` table must have two items, the option name and its tooltip.
+---@class enum_variant_detail
+---@field ui_name string
+---@field ui_description string
+---@alias enum_variant integer|string
+---@alias enum_variant_details { [enum_variant]: enum_variant_detail }
+
+---Order of variants determines the order.
 ---
----**NOTE:** Order of `enum_values` must be consistent, so don't derive it using `pairs` over a `table`.
----@param enum_values integer[]|string[]
----@param info table
-local function CreateGuiSettingEnum(enum_values, info)
+---Very little sanity checks in place. Don't pass in empty lists, etc.
+---@param variants enum_variant[]
+---@param variant_details enum_variant_details
+local function CreateGuiSettingEnum(variants, variant_details)
   return function(mod_id, gui, in_main_menu, im_id, setting)
     local setting_id = mod_setting_get_id(mod_id, setting)
     local prev_value = ModSettingGetNextValue(setting_id) or setting.value_default
@@ -122,14 +127,14 @@ local function CreateGuiSettingEnum(enum_values, info)
 
     local value = nil
 
-    if info[prev_value] == nil then
+    if variant_details[prev_value] == nil then
       prev_value = setting.value_default
     end
 
-    if GuiButton(gui, im_id, 0, 0, setting.ui_name .. ": " .. info[prev_value][1]) then
-      for i, v in ipairs(enum_values) do
+    if GuiButton(gui, im_id, 0, 0, setting.ui_name .. ": " .. variant_details[prev_value].ui_name) then
+      for i, v in ipairs(variants) do
         if prev_value == v then
-          value = enum_values[i % #enum_values + 1]
+          value = variants[i % #variants + 1]
           break
         end
       end
@@ -139,8 +144,8 @@ local function CreateGuiSettingEnum(enum_values, info)
       value = setting.value_default
       GamePlaySound("data/audio/Desktop/ui.bank", "ui/button_click", 0, 0)
     end
-    if hovered and is_visible_string(info[prev_value][2]) then
-      GuiTooltip(gui, info[prev_value][2], "")
+    if hovered and is_visible_string(variant_details[prev_value].ui_description) then
+      GuiTooltip(gui, variant_details[prev_value].ui_description, "")
     end
 
     GuiLayoutEnd(gui)
@@ -254,12 +259,6 @@ mod_settings_version = 3
 
 
 local RESPAWN_SYSTEM = { UNLIMITED = 1, LIMITED = 2, META_LEVELING = 3 }
-local RESPAWN_SYSTEM_INFO = {
-  [RESPAWN_SYSTEM.UNLIMITED] = { "Unlimited", "Unlimited respawns." },
-  [RESPAWN_SYSTEM.LIMITED] = { "Limited", "A fixed number of revives will be available." },
-  [RESPAWN_SYSTEM.META_LEVELING] = { "Meta Leveling", "Utilize Meta Leveling's XP system to earn revives as you progress,\nand look forward to additional revive-related rewards being added to the pool." }
-}
-
 local respawn_point_keybind, respawn_point_keybind_reset = CreateGuiSettingKeybind()
 
 ---@type mod_settings_global
@@ -303,7 +302,15 @@ mod_settings = {
         ui_name = "Respawn System",
         value_default = RESPAWN_SYSTEM.UNLIMITED,
         ui_fn = CreateGuiSettingEnum({ RESPAWN_SYSTEM.UNLIMITED, RESPAWN_SYSTEM.LIMITED, RESPAWN_SYSTEM.META_LEVELING },
-          RESPAWN_SYSTEM_INFO),
+          {
+            [RESPAWN_SYSTEM.UNLIMITED] = { ui_name = "Unlimited", ui_description = "Unlimited respawns." },
+            [RESPAWN_SYSTEM.LIMITED] = { ui_name = "Limited", ui_description = "A fixed number of revives will be available." },
+            [RESPAWN_SYSTEM.META_LEVELING] = {
+              ui_name = "Meta Leveling",
+              ui_description =
+              "Utilize Meta Leveling's XP system to earn revives as you progress,\nand look forward to additional revive-related rewards being added to the pool."
+            }
+          }),
         scope = MOD_SETTING_SCOPE_RUNTIME
       },
       {
