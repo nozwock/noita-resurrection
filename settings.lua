@@ -160,7 +160,7 @@ end
 ---@param number number
 ---@param decimal? integer
 local function TruncateNumber(number, decimal)
-  if decimal <= 0 then
+  if decimal and decimal <= 0 then
     decimal = nil
   end
   local pow = 10 ^ (decimal or 0)
@@ -175,7 +175,7 @@ end
 ---@param number number
 ---@param decimal? integer
 local function FloorSliderValueFloat(number, decimal)
-  if decimal <= 0 or not decimal then
+  if not decimal or decimal <= 0 then
     decimal = 0
   end
   local pow = 10 ^ (decimal + 1)
