@@ -1,6 +1,9 @@
-You'll always have a choice between life and death.
+> You'll always have a choice between life and death.
+<img src="https://github.com/user-attachments/assets/186f44c4-a1ce-4ba9-b444-33d8d3c857d0" width="380" />
 
-![](https://i.imgur.com/aEdbVQv.gif)
+---
+
+<img align="right" src="https://i.imgur.com/aEdbVQv.gif" />
 
 Yet another mod with a respawn system, with the difference being that you get to choose whether to respawn or not upon each death. You can also reset your respawn point by holding the 'Set Respawn Point' key for a second, which is 'T' by default and can be configured in the mod settings. Additionally, there are options to respawn with lower health, to drop some fraction of gold on death, and more, all of which can be configured.
 
